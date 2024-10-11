@@ -1,6 +1,7 @@
 import {readFileSync, writeFileSync} from "node:fs";
 
 import {MercadoPagoConfig, Preference, Payment} from "mercadopago";
+import {revalidatePath} from "next/cache";
 
 interface Message {
   id: number;
@@ -57,6 +58,9 @@ const api = {
 
         // Guardamos los datos
         writeFileSync("data.db", JSON.stringify(db, null, 2));
+
+        // Revalidamos la página de inicio para mostrar los datos actualizados
+        revalidatePath("/");
       }
     },
   },

@@ -201,6 +201,9 @@ const api = {
 
         // Guardamos los datos
         writeFileSync("data.db", JSON.stringify(db, null, 2));
+
+        // Revalidamos la página de inicio para mostrar los datos actualizados
+        revalidatePath("/");
       }
     }
   }
