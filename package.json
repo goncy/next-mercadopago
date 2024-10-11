@@ -1,0 +1,43 @@
+{
+  "name": "next-mercadopago",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@opentelemetry/api-logs": "^0.53.0",
+    "@vercel/otel": "^1.10.0",
+    "autoprefixer": "^10.4.20",
+    "mercadopago": "^2.0.15",
+    "next": "15.0.0-canary.162",
+    "postcss": "^8.4.47",
+    "react": "19.0.0-rc-e4953922-20240919",
+    "react-dom": "19.0.0-rc-e4953922-20240919",
+    "tailwindcss": "^3.4.12"
+  },
+  "devDependencies": {
+    "@eslint/compat": "^1.1.1",
+    "@next/eslint-plugin-next": "15.0.0-canary.162",
+    "@types/node": "^22.5.5",
+    "@types/react": "^18.3.8",
+    "@types/react-dom": "^18.3.0",
+    "@vercel/style-guide": "^6.0.0",
+    "babel-plugin-react-compiler": "0.0.0-experimental-6067d4e-20240919",
+    "eslint": "^9.11.0",
+    "eslint-config-next": "15.0.0-canary.162",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-jsx-a11y": "^6.10.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react-compiler": "0.0.0-experimental-c8b3f72-20240517",
+    "globals": "^15.9.0",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.6",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.6.0"
+  }
+}
