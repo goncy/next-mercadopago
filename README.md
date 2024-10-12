@@ -16,7 +16,7 @@ Además de tener lo necesario para correr una aplicación Next.js, necesitamos:
 
 ## Video
 
-@TODO
+[![Integrar pagos con Mercado Pago a una aplicación Next.js](https://img.youtube.com/vi/BUHUW7tAr_Y/maxresdefault.jpg)](https://www.youtube.com/watch?v=BUHUW7tAr_Y)
 
 ## Indice
 
