@@ -1,9 +1,9 @@
-# Integración de Mercado Pago Checkout Pro en Next.js
+# Integración de Mercado Pago Checkout Pro, Payment Card Brick y Suscripciones en Next.js
 
-En este respositorio vamos a aprender a integrar Mercado Pago Checkout Pro en una aplicación de comentarios utilizando Next.js con App Router. El fin de la aplicación es poder agregar mensajes a una lista de mensajes, por la cual debemos pagar para que se pueda agregar.
+En este respositorio vamos a aprender a integrar Mercado Pago Checkout Pro y Suscripciones usando Payment Card Brick en una aplicación de comentarios utilizando Next.js con App Router. El fin de la aplicación es poder agregar mensajes a una lista de mensajes, por la cual debemos pagar (o suscribirnos) para que se pueda agregar.
 
 > [!IMPORTANT]
-> Por simplicidad, nuestra aplicación no guarda los mensajes en una base de datos, sino que los guarda en un archivo llamado `db/messages.db` en la raíz del proyecto. Escribir al file system no está permitido en muchos proveedores de hosting, por ende, en un ambiente de producción deberíamos usar una base de datos.
+> Por simplicidad, nuestra aplicación no guarda los mensajes en una base de datos, sino que los guarda en un archivo llamado `db/messages.db` en la raíz del proyecto (al igual que la base de datos del usuario en `db/user.db`). Escribir al file system no está permitido en muchos proveedores de hosting, por ende, en un ambiente de producción deberíamos usar una base de datos y un sistema de usuarios real.
 
 ## Requisitos
 
@@ -29,6 +29,11 @@ Además de tener lo necesario para correr una aplicación Next.js, necesitamos:
 3. [Recibir notificaciones de pagos](#recibir-notificaciones-de-pagos)
     1. [Configurar un webhook de pagos](#configurar-un-webhook-de-pagos)
     2. [Verificar la autenticidad del pago](#verificar-la-autenticidad-del-pago)
+4. [Implementar suscripciones](#implementar-suscripciones)
+    1. [Crear el componente de Payment Card Brick](#crear-el-componente-de-payment-card-brick)
+    2. [Crear una página de suscripciones](#crear-una-página-de-suscripciones)
+    3. [Realizar una suscripción de prueba](#realizar-una-suscripción-de-prueba)
+    4. [Actualizar la recepción de notificaciones](#actualizar-la-recepción-de-notificaciones)
 
 > [!IMPORTANT]
 > El código del proyecto ya está implementado, usá este README para guiarte en la implementación o para entender cómo funciona cada parte y agregarlo a otro proyecto.
@@ -39,13 +44,16 @@ Esta es posiblemente la parte más complicada dado lo confuso que puede ser el f
 
 ![image](./screenshots/crear-aplicacion.jpg)
 
-Una vez dentro, cargamos todos los datos de nuestra aplicación asegurandonos de seleccionar `CheckoutPro` en "¿Qué producto estás integrando?" ya que es el método de pago que vamos a utilizar.
+Una vez dentro, cargamos todos los datos de nuestra aplicación. Vamos a seleccionar `CheckoutPro` en "¿Qué producto estás integrando?" ya que es el método de pago con el que vamos a utilizar (aunque realmente no se si es necesario, ya que vamos a usar Payment Card Brick y Suscripciones también).
 
 Una vez creada la aplicación vamos a ser redirigidos a la pantalla de integración. Como todavía no queremos procesar pagos reales, vamos a dirigirnos a la sección `Credenciales de prueba` que tenemos a la izquierda. Pero, cuando intentamos entrar nos encontramos con esto:
 
 ![image](./screenshots/error-prueba.jpg)
 
 Resulta que no hay credenciales de prueba para `CheckoutPro`, pero, tenemos usuarios de prueba. Dado que en Mercado Pago, no podemos crear una aplicación de la que seamos beneficiarios (recibamos pagos) y pagarnos a nosotros mismos, lo que vamos a tener que hacer es crear dos cuentas de prueba (una para el vendedor o beneficiario y otra para el comprador).
+
+> [!TIP]
+> Si solamente querés implementar suscripciones, podés seleccionar `Suscripciones` al crear la aplicación y usar directamente las credenciales de prueba. Dado que acá vamos a usar también Checkout Pro y esta forma funciona para ambos, vamos a tomar el camino largo (pero correcto).
 
 ### Crear las cuentas de prueba de vendedor y comprador
 
@@ -66,7 +74,7 @@ Vamos a abrir la [página de desarrolladores de Mercado Pago](https://www.mercad
 
 ![image](./screenshots/crear-app-test.jpg)
 
-Después nos vamos a dirigir a `Credenciales de producción` (como es una cuenta de prueba, producción es prueba) y nos copiamos el `Access Token` y lo pegamos en nuestro archivo `.env.local` en `MP_ACCESS_TOKEN`.
+Después nos vamos a dirigir a `Credenciales de producción` (como es una cuenta de prueba, producción es prueba) y nos copiamos el `Access Token` y `Public Key` y lo pegamos en nuestro archivo `.env.local`.
 
 Finalmente ya tenemos las credenciales para poder usar en nuestra aplicación, espero no haya sido mucho trabajo.
 
@@ -150,7 +158,9 @@ Como Mercado Pago no sabe que es `localhost:3000` (ni tampoco lo que es nuestro 
 
 Si corremos nuestra aplicación con `npm run dev` (habiendo hecho `npm install` previamente) y luego entramos a la URL que nos da el `Dev Tunnel`, deberíamos ver nuestra aplicación corriendo.
 
-Ahora vamos a crear una ruta en nuestra aplicación que se encargue de recibir las notificaciones de Mercado Pago. Para eso creamos el archivo `src/app/api/mercadopago/pagos/route.ts` y agregamos el siguiente contenido:
+Una vez que tengamos esta URL, vamos a agregarla a nuestro `.env.local` en `APP_URL`.
+
+Ahora vamos a crear una ruta en nuestra aplicación que se encargue de recibir las notificaciones de Mercado Pago. Para eso creamos el archivo `src/app/api/mercadopago/route.ts` y agregamos el siguiente contenido:
 
 ```ts
 export async function POST(req: Request) {
@@ -167,9 +177,9 @@ export async function POST(req: Request) {
 
 ### Configurar un webhook de pagos
 
-Vamos a ir a Mercado Pago y en la sección de `Webhooks` del panel izquierdo, vamos a crear uno nuevo asegurandonos de estar en `Modo productivo`. En la URL de producción, pegamos la URL que nos da el `Dev Tunnel` (más el endpoint `/api/mercadopago/pagos` al final) y seleccionamos `Pagos` en "Eventos".
+Vamos a ir a Mercado Pago y en la sección de `Webhooks` del panel izquierdo, vamos a crear uno nuevo asegurandonos de estar en `Modo productivo`. En la URL de producción, pegamos la URL que nos da el `Dev Tunnel` (más el endpoint `/api/mercadopago` al final) y seleccionamos `Pagos` en "Eventos".
 
-Si vamos a `Simular notificación` y emitimos, deberíamos ver un mensaje similar a este indicando de que todo está funcionando correctamente y también deberíamos ver un log en la terminal de nuestro equipo local hacia `/api/mercadopago/pagos` incluyendo información sobre la notificación.
+Si vamos a `Simular notificación` y emitimos, deberíamos ver un mensaje similar a este indicando de que todo está funcionando correctamente y también deberíamos ver un log en la terminal de nuestro equipo local hacia `/api/mercadopago` incluyendo información sobre la notificación.
 
 ![image](./screenshots/webhook-success.jpg)
 
@@ -177,66 +187,264 @@ Si vamos a `Simular notificación` y emitimos, deberíamos ver un mensaje simila
 
 Si vamos a tomar acciones en nuestra aplicación dependiendo de si un pago fue aprobado o no, es necesario verificar la autenticidad de la notificación que nos llega. También deberíamos verificar que el pago no haya sido procesado previamente.
 
-En nuestro archivo `/src/api.ts` vamos a crear una función `add` en message que reciba un `id` de pago como parámetro y solo agregue el mensaje si el pago fue aprobado y no existe ya un mensaje con ese id:
+En nuestro route handler de notificaciones `/src/app/api/mercadopago/route.ts` vamos a importar `mercadopago` y `api` vamos a verificar si el pago es válido para solamente agregar el mensaje cuando lo sea:
 
 ```ts
-const api = {
-  message: {
-    async add(id: string): Promise<void> {
-      // Obtenemos el pago
-      const payment = await new Payment(mercadopago).get({id});
+import {Payment, PreApproval} from "mercadopago";
+import {revalidatePath} from "next/cache";
 
-      // Si se aprueba, agregamos el mensaje
-      if (payment.status === "approved") {
-        // Obtenemos los datos
-        const db = await this.list();
+import api, {mercadopago} from "@/api";
 
-        // Si ya existe un mensaje con el id del pago, lanzamos un error
-        if (db.some((message) => message.id === payment.id)) {
-          throw new Error("Payment already added");
-        }
+export async function POST(request: Request) {
+  // Obtenemos el cuerpo de la petición que incluye información sobre la notificación
+  const body: {data: {id: string}} = await request.json();
 
-        // Agregamos el nuevo mensaje
-        db.push({id: payment.id!, text: payment.metadata.text});
+  // Obtenemos el pago
+  const payment = await new Payment(mercadopago).get({id: body.data.id});
 
-        // Guardamos los datos
-        writeFileSync("db/messages.db", JSON.stringify(db, null, 2));
+  // Si se aprueba, agregamos el mensaje
+  if (payment.status === "approved") {
+    // Obtenemos los datos
+    await api.message.add({id: payment.id!, text: payment.metadata.text});
 
-        // Revalidamos la página de inicio para mostrar los datos actualizados
-        revalidatePath("/");
-      }
-    }
+    // Revalidamos la página de inicio para mostrar los datos actualizados
+    revalidatePath("/");
+
+    // Respondemos con un estado 200 para indicarle que la notificación fue recibida
+    return new Response(null, {status: 200});
+  } else {
+    // Respondemos con un estado 400 para indicarle que la notificación no fue resuelta
+    return new Response(null, {status: 400});
   }
 }
 ```
 
-De esta manera, solamente vamos a agregar el mensaje a nuestra lista si el pago es legítimo, fue aprobado y no existe ya un mensaje con ese id.
+De esta manera, solamente vamos a agregar el mensaje a nuestra lista si el pago es legítimo, fue aprobado y no existe ya un mensaje con ese id (esto último se valida en `api.message.add`).
 
 > [!TIP]
 > En una aplicación real deberíamos verificar la concordancia de la clave secreta, devolver errores más descriptivos y más, pero por simplicidad y tiempo te voy a dejar esa tarea a vos, podés ver más [acá](https://www.mercadopago.com.ar/developers/es/docs/your-integrations/notifications/webhooks#configuracinatravsdetusintegraciones).
-
-Ahora vamos a actualizar nuestro `/src/app/api/mercadopago/pagos/route.ts` para que llame a la función `add` de nuestro archivo `/src/api.ts` cuando reciba una notificación de pago:
-
-```ts
-import api from "@/api";
-
-export async function POST(req: Request) {
-  // Obtenemos el cuerpo de la petición que incluye el id del pago dentro de un objeto data
-  const body: {data: {id: string}} = await req.json();
-
-  // Enviamos el id del pago para obtener los datos y agregar el mensaje
-  await api.message.add(body.data.id);
-
-  // Respondemos con un estado 200 para indicarle que la notificación fue recibida
-  return new Response(null, {status: 200});
-}
-```
 
 Ahora vamos a intentar de hacer el flujo completo de agregar un mensaje a nuestra lista de mensajes y veamos si funciona.
 
 ![image](./screenshots/pago-aprobado.jpg)
 
 Excelente, nuestro pago fue aprobado, el webhook fue recibido y nuestro mensaje fue agregado a la lista ✨.
+
+## Implementar suscripciones
+
+A la hora de implementar suscripciones podemos hacerlo mediante [Suscripciones con plan asociado](https://www.mercadopago.com.ar/developers/es/docs/subscriptions/integration-configuration/subscription-associated-plan) o [Suscripciones sin plan asociado](https://www.mercadopago.com.ar/developers/es/docs/subscriptions/integration-configuration/subscription-no-associated-plan). Las primeras son bastante sencillas de implementar: Se crea un plan con valor, nombre y un par de datos más y listo, nos da una URL similar a lo que hace una preferencia. El problema es que este preferencia no recibe datos de referencia o metadatos que podamos usar para identificar a nuestro usuario cuando hace el pago, así que vamos a usar la segunda opción.
+
+### Crear el componente de Payment Card Brick
+
+Los Checkout Bricks son un conjunto de componentes de cliente que nos permiten simplificar un poco el flujo de pagos con Mercado Pago. En este caso, el Payment Card Brick nos permite tomar los datos de una tarjeta y recibir un token de Mercado Pago con el que podrémos crear la suscripción.
+
+Vamos a crear un archivo `/src/app/suscripciones/card-brick.tsx` y vamos a agregar el siguiente contenido:
+
+```tsx
+"use client";
+
+import type {
+  ICardPaymentBrickPayer,
+  ICardPaymentFormData,
+} from "@mercadopago/sdk-react/bricks/cardPayment/type";
+
+import {useEffect} from "react";
+import {initMercadoPago, CardPayment} from "@mercadopago/sdk-react";
+
+export default function CardBrick({
+  onSubmitAction,
+  amount,
+}: {
+  onSubmitAction: (param: ICardPaymentFormData<ICardPaymentBrickPayer>) => Promise<void>;
+  amount: number;
+}) {
+  useEffect(() => {
+    // Inicializamos el SDK
+    initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!);
+
+    // Desmontamos el componente de bricks cuando se desmonte el componente
+    return () => {
+      window?.cardPaymentBrickController?.unmount();
+    };
+  }, []);
+
+  // Renderizamos el componente de bricks
+  return <CardPayment initialization={{amount}} onSubmit={onSubmitAction} />;
+}
+```
+
+Este componente se encarga de inicializar el SDK de Mercado Pago usando el Public Key de nuestra aplicación (que cargamos en nuestro `.env.local`) y renderizar un formulario para tomar los datos de una tarjeta y ejecutar la función `onSubmit` cuando el pago es realizado correctamente.
+
+### Crear una página de suscripciones
+
+Vamos a crear una nueva ruta `/suscripciones` creando el archivo `/src/app/suscripciones/page.tsx` con el siguiente contenido:
+
+```tsx
+import type {
+  ICardPaymentBrickPayer,
+  ICardPaymentFormData,
+} from "@mercadopago/sdk-react/bricks/cardPayment/type";
+
+import {revalidatePath} from "next/cache";
+
+import CardBrick from "./card-brick";
+
+import api from "@/api";
+
+// Queremos que esta página sea dinámica para siempre poder ver la información actualizada del usuario
+export const dynamic = "force-dynamic";
+
+export default async function SuscripcionesPage() {
+  // Obtenemos el usuario y los mensajes
+  const user = await api.user.fetch();
+  const messages = await api.message.list();
+
+  // Creamos una función para agregar un mensaje
+  async function add(formData: FormData) {
+    "use server";
+
+    // Obtenemos el mensaje del formulario
+    const message = formData.get("text") as string;
+
+    // Agregamos el mensaje a la base de datos
+    await api.message.add({text: message, id: Date.now()});
+
+    // Revalidamos la ruta para que se actualice la información
+    revalidatePath("/suscripciones");
+  }
+
+  async function subscribe(data: ICardPaymentFormData<ICardPaymentBrickPayer>) {
+    "use server";
+
+    // Creamos una suscripción usando los datos que nos devolvió el Checkout Brick
+    await api.user.subscribe(data.payer.email!, data.token);
+
+    // Revalidamos la ruta para poder ver el formulario de agregar mensaje
+    revalidatePath("/suscripciones");
+  }
+
+  return (
+    <section className="grid gap-8">
+      {user.suscription ? (
+        <form action={add} className="grid gap-2">
+          <textarea
+            className="border-2 border-blue-400 p-2"
+            name="text"
+            placeholder="Hola perro"
+            rows={3}
+          />
+          <button className="rounded bg-blue-400 p-2" type="submit">
+            Enviar
+          </button>
+        </form>
+      ) : (
+        <CardBrick amount={100} onSubmitAction={subscribe} />
+      )}
+      <ul className="grid gap-2">
+        {messages.map((message) => (
+          <li key={message.id} className="rounded bg-blue-400/10 p-4">
+            {message.text}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+```
+
+Esta ruta va a mostrar una UI diferente basado en si el usuario tiene una suscripción activa o no. Si no la tiene, va a renderizar el Payment Card Brick para que el usuario pueda suscribirse. Si la tiene, va a renderizar un formulario para agregar un mensaje a nuestra lista de mensajes.
+
+También crea un Server Action llamado `subscribe` que se lo vamos a pasar al componente `CardBrick`. Este action se va a ejecutar cuando hagamos `submit` en el Brick y se va a encargar de crear una suscripción usando el token e email que nos devuelve el Brick.
+
+### Realizar una suscripción de prueba
+
+Vamos a iniciar sesión con nuestra cuenta de prueba comprador y vamos a intentar suscribirnos a nuestro plan. Si vamos a `http://localhost:3000/suscripciones` vamos a ver el Payment Card Brick.
+
+Vamos a llenar los datos con la tarjeta de prueba de Mercado Pago de nuestro usuario comprador (si no los podes ver, creá una aplicación con la cuenta compradora y andá a `Tarjetas de prueba`).
+
+![image](./screenshots/payment-brick.jpg)
+
+> [!WARNING]
+> Para que me funcione este flujo tuve que usar la tarjeta de Visa, el nombre APRO, DNI 12345678 y el mail debe ser el del usuario de prueba (lo pueden obtener desde el perfil del usuario de prueba)
+
+Una vez hecho el submit, deberíamos ver el formulario para agregar un mensaje.
+
+### Actualizar la recepción de notificaciones
+
+Vamos a actualizar nuestro webhook en la aplicación de prueba del vendedor para también recibir notificaciones de nuestras suscripciones.
+
+![image](./screenshots/update-webhook.jpg)
+
+Una vez hecho esto, vamos a `/src/app/api/mercadopago/route.ts` y vamos a agregar la lógica para recibir notificaciones de suscripciones. Vamos a tener una cadena de ifs para verificar el tipo de notificación y actuar en consecuencia:
+
+```ts
+export async function POST(request: Request) {
+  // Obtenemos el cuerpo de la petición que incluye el tipo de notificación
+  const body: {type: string; data: {id: string}} = await request.json();
+
+  // Dependiendo del tipo de notificación, llamamos a la función correspondiente
+  if (body.type.startsWith("payment")) {
+    return handlePaymentNotification(body);
+  } else if (body.type.startsWith("subscription")) {
+    return handlePreapprovalNotification(body);
+  } else {
+    return new Response(null, {status: 400});
+  }
+}
+```
+
+Una vez hecho esto, vamos a implementar ambas funciones:
+
+```ts
+import {Payment, PreApproval} from "mercadopago";
+import {revalidatePath} from "next/cache";
+
+import api, {mercadopago} from "@/api";
+
+async function handlePaymentNotification(body: {data: {id: string}}) {
+  // Obtenemos el pago
+  const payment = await new Payment(mercadopago).get({id: body.data.id});
+
+  // Si se aprueba, agregamos el mensaje
+  if (payment.status === "approved") {
+    // Obtenemos los datos
+    await api.message.add({id: payment.id!, text: payment.metadata.text});
+
+    // Revalidamos la página de inicio para mostrar los datos actualizados
+    revalidatePath("/");
+
+    // Respondemos con un estado 200 para indicarle que la notificación fue recibida
+    return new Response(null, {status: 200});
+  } else {
+    // Respondemos con un estado 400 para indicarle que la notificación no fue resuelta
+    return new Response(null, {status: 400});
+  }
+}
+
+async function handlePreapprovalNotification(body: {data: {id: string}}) {
+  // Obtenemos la suscripción
+  const preapproval = await new PreApproval(mercadopago).get({id: body.data.id});
+
+  // Si se aprueba, actualizamos el usuario con el id de la suscripción
+  if (preapproval.status === "authorized") {
+    // Actualizamos el usuario con el id de la suscripción
+    await api.user.update({suscription: preapproval.id});
+
+    // Respondemos con un estado 200 para indicarle que la notificación fue recibida
+    return new Response(null, {status: 200});
+  } else {
+    // Respondemos con un estado 400 para indicarle que la notificación no fue resuelta
+    return new Response(null, {status: 400});
+  }
+}
+```
+
+El manejo de notificaciones de suscripciones es muy similar al de pagos, la diferencia está en que en las suscripciones el status es `authorized` en vez de `approved`.
+
+> [!IMPORTANT]
+> En una aplicación real deberíamos tener más control sobre la suscripción, verificar su estado, cancelarla, asegurarnos de que no esté duplicada, etc. Pero esa tarea te la dejo a vos.
+
+Perfecto, ahora si todo está funcionando correctamente ✨.
 
 ---
 

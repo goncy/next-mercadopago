@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mercadopago/sdk-react": "^0.0.19",
     "@opentelemetry/api-logs": "^0.53.0",
     "@vercel/otel": "^1.10.0",
     "autoprefixer": "^10.4.20",
