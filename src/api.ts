@@ -13,7 +13,7 @@ const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TO
 const api = {
   message: {
     async list(): Promise<Message[]> {
-      const db = readFileSync("data.db");
+      const db = readFileSync("db/messages.db");
 
       // Devolvemos los datos como un array de objetos
       return JSON.parse(db.toString());
@@ -57,7 +57,7 @@ const api = {
         db.push({id: payment.id!, text: payment.metadata.text});
 
         // Guardamos los datos
-        writeFileSync("data.db", JSON.stringify(db, null, 2));
+        writeFileSync("db/messages.db", JSON.stringify(db, null, 2));
 
         // Revalidamos la página de inicio para mostrar los datos actualizados
         revalidatePath("/");

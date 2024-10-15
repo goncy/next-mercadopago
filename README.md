@@ -3,7 +3,7 @@
 En este respositorio vamos a aprender a integrar Mercado Pago Checkout Pro en una aplicación de comentarios utilizando Next.js con App Router. El fin de la aplicación es poder agregar mensajes a una lista de mensajes, por la cual debemos pagar para que se pueda agregar.
 
 > [!IMPORTANT]
-> Por simplicidad, nuestra aplicación no guarda los mensajes en una base de datos, sino que los guarda en un archivo llamado `data.db` en la raíz del proyecto. Escribir al file system no está permitido en muchos proveedores de hosting, por ende, en un ambiente de producción deberíamos usar una base de datos.
+> Por simplicidad, nuestra aplicación no guarda los mensajes en una base de datos, sino que los guarda en un archivo llamado `db/messages.db` en la raíz del proyecto. Escribir al file system no está permitido en muchos proveedores de hosting, por ende, en un ambiente de producción deberíamos usar una base de datos.
 
 ## Requisitos
 
@@ -200,7 +200,7 @@ const api = {
         db.push({id: payment.id!, text: payment.metadata.text});
 
         // Guardamos los datos
-        writeFileSync("data.db", JSON.stringify(db, null, 2));
+        writeFileSync("db/messages.db", JSON.stringify(db, null, 2));
 
         // Revalidamos la página de inicio para mostrar los datos actualizados
         revalidatePath("/");
