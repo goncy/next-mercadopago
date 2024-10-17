@@ -8,12 +8,12 @@ Una vez que tengamos la URL, independientemente de la herramienta que usemos par
 
 ## Índice
 
-1. [Alternativas](#alternativas)
+1. [Herramientas](#herramientas)
     1. [Cloudflared Tunnel](#cloudflared-tunnel)
     2. [VSCode Dev Tunnels](#vscode-dev-tunnels)
 2. [Probando el link](#probando-el-link)
 
-## Alternativas
+## Herramientas
 
 Cualquier herramienta que nos permita exponer un puerto de nuestra aplicación a internet va a ser suficiente. Te dejo acá dos alternativas que probé y funcionan bien.
 
