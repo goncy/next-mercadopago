@@ -10,6 +10,7 @@ Una vez que tengamos la URL, independientemente de la herramienta que usemos par
 
 - [Cloudflared Tunnel](#cloudflared-tunnel)
 - [VSCode Dev Tunnels](#vscode-dev-tunnels)
+- [Probando el link](#probando-el-link)
 
 ## Cloudflared Tunnel
 
@@ -31,8 +32,10 @@ Yo estoy usando VSCode, por ende voy a usar `Dev Tunnels` para exponer el puerto
 > [!NOTE]
 > Si no ves la sección de `Ports` en VSCode, presiona `ctrl + shift + p` (o `cmd + shift + p` en Mac) y busca `Forward a Port` (o en español asumo debe ser `Exponer un puerto`) y te mostrará la sección.
 
-Si corremos nuestra aplicación con `npm run dev` (habiendo hecho `npm install` previamente) y luego entramos a la URL que nos da el `Dev Tunnel`, deberíamos ver nuestra aplicación corriendo. Para asegurarte de que es pública, intentá de acceder con tu celular sin conectarte a la misma red wifi.
+## Probando el link
+
+Si corremos nuestra aplicación con `npm run dev` (habiendo hecho `npm install` previamente) y luego entramos a la URL que obtuvimos, deberíamos ver nuestra aplicación corriendo. Para asegurarte de que es pública, intentá de acceder con tu celular sin conectarte a la misma red wifi.
 
 ---
 
-[Volver al inicio](../README.md)
+[Volver al inicio](../../README.md)
