@@ -1,22 +1,25 @@
-# Integración de Mercado Pago Checkout Pro, Payment Card Brick y Suscripciones en Next.js
+# Integración de Mercado Pago en Next.js
 
-En este respositorio vamos a aprender a integrar Mercado Pago Checkout Pro y Suscripciones usando Payment Card Brick en una aplicación de comentarios utilizando Next.js con App Router. El fin de la aplicación es poder agregar mensajes a una lista de mensajes, por la cual debemos pagar (o suscribirnos) para que se pueda agregar.
+En este respositorio vamos a aprender a integrar Mercado Pago en una aplicación de comentarios utilizando Next.js con App Router. El fin de la aplicación es poder agregar mensajes a una lista de mensajes.
 
-> [!IMPORTANT]
-> Por simplicidad, nuestra aplicación no guarda los mensajes en una base de datos, sino que los guarda en un archivo llamado `db/messages.db` en la raíz del proyecto (al igual que la base de datos del usuario en `db/user.db`). Escribir al file system no está permitido en muchos proveedores de hosting, por ende, en un ambiente de producción deberíamos usar una base de datos y un sistema de usuarios real.
+## Indice
 
-## Requisitos
+Vamos a tener diferentes carpetas y aplicaciones para cada tipo de integración, así mantenemos el código simple y podemos enfocarnos en lo que nos interesa.
 
-Además de tener lo necesario para correr una aplicación Next.js, necesitamos:
+1. Prerequisitos
+    1. [Configuración de Mercado Pago](./configuracion-mercadopago/README.md): Crear una [integración](https://www.mercadopago.com.ar/developers/panel/app) en Mercado Pago, crear las cuentas de prueba y las integraciones en las cuentas de prueba. Esto es requerido (o al menos recomendado) en todas las integraciones, así que completá esto antes de seguir con una integración.
+    2. [Exponer el puerto](./exponer-puerto/README.md): Para que Mercado Pago pueda enviarnos notificaciones sobre los pagos o suscripciones, es necesario exponer nuestro puerto a internet.
+2. Integraciones
+    1. [Checkout Pro](./checkout-pro/README.md): Los usuarios van a tener que pagar para poder agregar un mensaje a la lista. Usamos [Checkout Pro](https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/landing) para crear una preferencia de pago y redirigir al usuario a Mercado Pago para que pueda pagar. Configuramos un webhook para recibir notificaciones del pago y verificar la autenticidad de la notificación.
+    2. [Suscripciones](./suscripciones/README.md): Los usuarios van a tener que suscribirse para poder agregar un mensaje a la lista. Usamos [Suscripciones sin plan asociado con pago pendiente](https://www.mercadopago.com.ar/developers/es/docs/subscriptions/integration-configuration/subscription-no-associated-plan/pending-payments). Configuramos un webhook para recibir notificaciones de suscripción y verificar la autenticidad de la notificación.
+    3. [Checkout Bricks](./checkout-bricks/README.md): Los usuarios van a tener que pagar para poder agregar un mensaje a la lista. Usamos [Checkout Bricks](https://www.mercadopago.com.ar/developers/es/docs/checkout-bricks/landing) para tomar los datos de pago dentro de nuestra aplicación.
+    4. [Marketplace](./marketplace/README.md): Vamos a ser el intermediario entre un usuario de nuestra aplicación que quiere recibir mensajes en su muro y un usuario que quiere pagar para escribir en ese muro. Vamos a usar Checkout Pro con la integración de [Marketplace](https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/how-tos/integrate-marketplace) para quedarnos con una ganancia por cada mensaje.
 
-- Una cuenta de Mercado Pago para crear nuestra aplicación
-- Poder exponer un puerto de nuestra máquina a internet para poder recibir notificaciones de Mercado Pago
-  - Si usas VSCode o algún editor basado en el, podes usar los [Dev Tunnels](https://code.visualstudio.com/docs/editor/port-forwarding). También es posible [instalarlo sin VSCode](https://learn.microsoft.com/es-es/azure/developer/dev-tunnels/get-started?tabs=windows)
-  - También podemos usar [Cloudflared Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-local-tunnel/#1-download-and-install-cloudflared)
+## Consideraciones
 
-## Video
-
-[![Integrar pagos con Mercado Pago a una aplicación Next.js](https://img.youtube.com/vi/BUHUW7tAr_Y/maxresdefault.jpg)](https://www.youtube.com/watch?v=BUHUW7tAr_Y)
+- Por simplicidad, nuestras aplicaciónes no usan una base de datos real, sino que usa archivos (llamados `db/message.db`, `db/user.db`, etc). Escribir al file system no está permitido en muchos proveedores de hosting, por ende, en un ambiente de producción deberíamos usar una base de datos real, pero para nuestro caso es más que suficiente.
+- Las cuentas de prueba no se pueden borrar y son válidas para todas las aplicaciones.
+- Los errores en Mercado Pago muchas veces son crípticos y la estabilidad de la API es discutible. Si algo no te anda, intentá más tarde o probá de buscar en el [Discord de Mercado Pago Developers](https://discord.gg/yth5bMKhdn).
 
 ## Indice
 
