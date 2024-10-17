@@ -7,12 +7,10 @@ Antes de continuar, asegurate de haber [creado una aplicación en Mercado Pago](
 ## Indice
 
 1. [Revisando nuestra aplicación](#revisando-nuestra-aplicación)
-2. [Crear una preferencia de pago](#crear-una-preferencia-de-pago)
-3. [Realizar un pago de prueba](#realizar-un-pago-de-prueba)
-4. [Configurar un webhook de pagos](#configurar-un-webhook-de-pagos)
-5. [Recibir notificaciones de pagos](#recibir-notificaciones-de-pagos)
-6. [Verificar la autenticidad del pago](#verificar-la-autenticidad-del-pago)
-7. [Realizar otro pago de prueba](#realizar-otro-pago-de-prueba)
+2. [Crear el formulario de pago](#crear-el-formulario-de-pago)
+3. [Efectivizar el pago](#efectivizar-el-pago)
+4. [Realizar un pago de prueba](#realizar-un-pago-de-prueba)
+5. [Consideraciones](#consideraciones)
 
 ## Revisando nuestra aplicación
 

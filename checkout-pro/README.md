@@ -67,9 +67,6 @@ export default async function HomePage() {
 }
 ```
 
-> [!NOTE]
-> Sentite libre de modificar el código, agregar un par de logs, etc.
-
 ## Crear una preferencia de pago
 
 Dentro de `/src/api.ts`, la función `submit` en `message` se encarga de crear una preferencia de pago y devolver el init point (url de pago):
