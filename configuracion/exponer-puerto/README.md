@@ -8,11 +8,16 @@ Una vez que tengamos la URL, independientemente de la herramienta que usemos par
 
 ## Índice
 
-- [Cloudflared Tunnel](#cloudflared-tunnel)
-- [VSCode Dev Tunnels](#vscode-dev-tunnels)
-- [Probando el link](#probando-el-link)
+1. [Alternativas](#alternativas)
+    1. [Cloudflared Tunnel](#cloudflared-tunnel)
+    2. [VSCode Dev Tunnels](#vscode-dev-tunnels)
+2. [Probando el link](#probando-el-link)
 
-## Cloudflared Tunnel
+## Alternativas
+
+Cualquier herramienta que nos permita exponer un puerto de nuestra aplicación a internet va a ser suficiente. Te dejo acá dos alternativas que probé y funcionan bien.
+
+### Cloudflared Tunnel
 
 Podemos instalar [Cloudflared Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-local-tunnel/#1-download-and-install-cloudflared) y usarlo para exponer nuestro puerto. Simplemente [descargá el binario correspondiente a tu sistema operativo](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) y corré el siguiente comando:
 
@@ -23,7 +28,7 @@ cloudflared tunnel --url http://localhost:3000
 > [!NOTE]
 > Asegurate de cerrar y abrir la terminal en caso de que no te reconozca el comando.
 
-## VSCode Dev Tunnels
+### VSCode Dev Tunnels
 
 Yo estoy usando VSCode, por ende voy a usar `Dev Tunnels` para exponer el puerto. Si nos dirigimos a la sección de `Ports` y hacemos click en `Forward a Port`, podemos elegir un puerto (nuestra aplicación corre en el 3000) y nos dará una URL. Asegurate de cambiar la visibilidad de la URL a `Public` para que Mercado Pago pueda acceder a ella.
 
