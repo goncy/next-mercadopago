@@ -169,7 +169,7 @@ Ahora vamos a nuestra aplicación, cargamos un mensaje, llenamos el formulario c
 
 ## Consideraciones
 
-Siempre asegurate de validar los montos y estado de los pagos. En una aplicación real no estaría de más [configurar un webhook para recibir notificaciones](../../configuracion/webhook/README.md) sobre los pagos de tu aplicación para tener más control sobre el estado y validez de los pagos. Podés ver un ejemplo de como [configurar un webhook de pago](../checkout-pro/README.md#recibir-notificaciones) en la sección de Checkout Pro.
+Siempre asegurate de validar los montos y estado de los pagos. En una aplicación real no estaría de más [configurar un webhook para recibir notificaciones](../../configuracion/webhook/README.md) sobre los pagos de tu aplicación para tener más control sobre el estado y validez de los pagos. Podés ver un ejemplo de como [recibir notificaciones de un webhook de pago](../checkout-pro/README.md#recibir-notificaciones) en la sección de Checkout Pro.
 
 ---
 
