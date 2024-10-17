@@ -13,7 +13,7 @@ Pero para otras integraciones, como `Checkout Pro` o `Suscripciones`...
 
 ![image](./screenshots/prueba-checkoutpro.jpg)
 
-Vamos a tener que iniciar sesión con una cuenta de prueba (generalmente la cuenta de Vendedor) y crear una aplicación, de la misma manera que lo haríamos con una cuenta real, para usar las credenciales de *producción* de esa aplicación durante la etapa de desarrollo. Vamos a usar las credenciales de *producción* de nuestra cuenta de *prueba*, porque en en una cuenta de *prueba* producción es *prueba*.
+Vamos a tener que iniciar sesión con una cuenta de prueba (generalmente la cuenta de Vendedor) y crear una aplicación, de la misma manera que lo haríamos con una cuenta real, para usar las credenciales de **producción** de esa aplicación durante la etapa de desarrollo. Vamos a usar las credenciales de **producción** de nuestra cuenta de **prueba**, porque en en una cuenta de **prueba** producción es **prueba**.
 
 No me mires a mi, yo no hice las reglas...
 
