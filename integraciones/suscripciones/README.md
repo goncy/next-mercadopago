@@ -2,7 +2,7 @@
 
 En este documento vamos a aprender a agregar suscripciones a nuestra aplicación utilizando [Suscripciones sin plan asociado con pago pendiente](https://www.mercadopago.com.ar/developers/es/docs/subscriptions/integration-configuration/subscription-no-associated-plan/pending-payments). Los usuarios van a poder agregar mensajes a una lista de mensajes siempre y cuando estén suscritos.
 
-Antes de continuar, asegurate de haber [configurado Mercado Pago](../configuracion-mercadopago/README.md) y haber [expuesto el puerto 3000 al exterior](../exponer-puerto/README.md).
+Antes de continuar, asegurate de haber [creado una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md), haber creado dos [cuentas de prueba](../../configuracion/cuentas-de-prueba/README.md) para Comprador y Vendedor, haber [expuesto el puerto 3000 al exterior](../../configuracion/exponer-puerto/README.md) y haber [configurado un webhook](../../configuracion/webhook/README.md) para escuchar eventos de `Planes y Suscripciones`.
 
 ## Indice
 
@@ -131,29 +131,6 @@ Las suscripciones de pago pueden ser de 2 tipos:
 
 Como te habrás dado cuenta, arriba estamos creando una suscripción sin plan asociado y de pago pendiente (status `pending`) y luego devolvemos el `init_point` y usamos esa URL para redirigir al usuario a Mercado Pago.
 
-## Realizar una suscripción de prueba
-
-Ahora vamos a iniciar sesión con nuestra cuenta de prueba comprador, vamos a ir a la página de inicio de nuestra aplicación y en el formulario de suscripción, vamos a escribir el email de nuestro usuario de la cuenta de prueba comprador de Mercado Pago (podés obtener este email entrando a [este link](https://www.mercadopago.com.ar/hub-engine/hubs/my-profile) desde el navegador donde estás logeado con tu cuenta de prueba de comprador de Mercado Pago). Eso nos va a redirigir a Mercado Pago. Completemos el pago y deberíamos ver algo como esto:
-
-![image](./screenshots/suscripcion-aprobada.jpg)
-
-Bien, nuestra suscripción fue aprobada. Ahora necesitamos que nuestra aplicación sea notificada de esta transacción para que pueda actualizar la suscripción y mostrar el formulario para agregar un mensaje.
-
-> [!IMPORTANT]
-> Es importante que uses el mail de la cuenta de prueba comprador de Mercado Pago, ya que si usas otro mail, posiblemente obtengas un error (poco descriptivo) y no puedas suscribirte.
-
-## Configurar webhook de notificaciones
-
-Vamos a ir a Mercado Pago y en la sección de `Webhooks` del panel izquierdo, vamos a `Configurar notificaciones`. Aseguratede estar en `Modo productivo` y en la URL de producción, pegamos la URL que tenemos en `APP_URL` dentro de nuestro archivo `.env.local` (más el endpoint `/api/mercadopago` al final) y seleccionamos `Planes y Suscripciones` en "Eventos".
-
-![image](./screenshots/webhook-config.jpg)
-
-Si vamos a `Simular notificación` y emitimos, deberíamos ver un mensaje similar a este indicando de que hubo un error (ya que la suscripción no existe) y también deberíamos ver un log en la terminal de nuestro equipo local hacia `/api/mercadopago` incluyendo información sobre la notificación.
-
-![image](./screenshots/webhook-error.jpg)
-
-Si bien no funcionó, nos sirve por que sabemos que Mercado Pago puede comunicarse con nuestra aplicación.
-
 ## Recibir notificaciones
 
 Tenemos un Route Handler (`src/app/api/mercadopago/route.ts`) definido en nuestra aplicación que se encarga de recibir las notificaciones de Mercado Pago.
@@ -192,14 +169,14 @@ En una aplicación real deberíamos verificar la concordancia de la clave secret
 
 ## Probar la integración
 
-Ahora vamos a intentar de hacer el flujo completo de suscribirnos y luego agregar un mensaje a nuestra lista de mensajes y veamos si funciona.
+Ahora vamos a iniciar sesión con nuestra cuenta de prueba comprador, vamos a ir a la página de inicio de nuestra aplicación y en el formulario de suscripción, vamos a escribir el email de nuestro usuario de la cuenta de prueba comprador de Mercado Pago (podés obtener este email entrando a [este link](https://www.mercadopago.com.ar/hub-engine/hubs/my-profile) desde el navegador donde estás logeado con esa cuenta). Eso nos va a redirigir a Mercado Pago. Completemos el pago y deberíamos ver algo como esto:
 
 ![image](./screenshots/suscripcion-aprobada.jpg)
 
-Excelente, nuestra suscripción fue aprobada, la notificación fue recibida y nuestro mensaje fue agregado a la lista ✨.
+> [!IMPORTANT]
+> Es importante que uses el mail de la cuenta de prueba comprador de Mercado Pago, ya que si usas otro mail, posiblemente obtengas un error (poco descriptivo) y no puedas suscribirte.
 
-> [!NOTE]
-> Si querés seguir probando este flujo, podés modificar el usuario desde `/db/user.db` y poner la suscripción en `null` para que puedas volver a suscribirte.
+Excelente, nuestra suscripción fue aprobada, la notificación fue recibida y si refrescamos la página e intentamos agregar un mensaje a la lista debería funcionar correctamente ✨.
 
 ---
 

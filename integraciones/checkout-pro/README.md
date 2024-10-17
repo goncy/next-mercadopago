@@ -2,7 +2,7 @@
 
 En este documento vamos a aprender a agregar pagos a nuestra aplicación utilizando Mercado Pago Checkout Pro. Los usuarios van a poder agregar mensajes a una lista de mensajes pagando por cada mensaje.
 
-Antes de continuar, asegurate de haber [configurado Mercado Pago](../configuracion-mercadopago/README.md) y haber [expuesto el puerto 3000 al exterior](../exponer-puerto/README.md).
+Antes de continuar, asegurate de haber [creado una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md), haber creado dos [cuentas de prueba](../../configuracion/cuentas-de-prueba/README.md) para Comprador y Vendedor, haber [expuesto el puerto 3000 al exterior](../../configuracion/exponer-puerto/README.md) y haber [configurado un webhook](../../configuracion/webhook/README.md) para escuchar eventos de `Pagos`.
 
 ## Video
 
@@ -12,11 +12,9 @@ Antes de continuar, asegurate de haber [configurado Mercado Pago](../configuraci
 
 1. [Revisando nuestra aplicación](#revisando-nuestra-aplicación)
 2. [Crear una preferencia de pago](#crear-una-preferencia-de-pago)
-3. [Realizar un pago de prueba](#realizar-un-pago-de-prueba)
-4. [Configurar un webhook de pagos](#configurar-un-webhook-de-pagos)
-5. [Recibir notificaciones de pagos](#recibir-notificaciones-de-pagos)
-6. [Verificar la autenticidad del pago](#verificar-la-autenticidad-del-pago)
-7. [Realizar otro pago de prueba](#realizar-otro-pago-de-prueba)
+3. [Recibir notificaciones de pagos](#recibir-notificaciones-de-pagos)
+4. [Verificar la autenticidad del pago](#verificar-la-autenticidad-del-pago)
+5. [Probar la integración](#probar-la-integración)
 
 ## Revisando nuestra aplicación
 
@@ -102,26 +100,6 @@ const api = {
 Podemos pensar a la preferencia de pago como un objeto que representa una orden de compra. algo que un usuario quiere comprar.
 
 Hay varias propiedades más que podemos agregar a la preferencia de pago, como la URL a la cual se va a redirigir al usuario luego de pagar. Una descripción más extensa del producto, etc. Podés ver más [acá](https://www.mercadopago.com.ar/developers/es/reference/preferences/_checkout_preferences/post).
-
-## Realizar un pago de prueba
-
-Ahora vamos a iniciar sesión con nuestra cuenta de prueba comprador y vamos a agregar un mensaje a nuestra lista. Eso nos va a redirigir a Mercado Pago. Completemos el pago y deberíamos ver algo como esto:
-
-![image](./screenshots/pago-aprobado.jpg)
-
-Bien, nuestro pago fue aprobado. Ahora necesitamos que nuestra aplicación sea notificada de esta transacción para que pueda agregar el mensaje a nuestra lista.
-
-## Configurar webhook de notificaciones
-
-Vamos a ir a Mercado Pago y en la sección de `Webhooks` del panel izquierdo, vamos a `Configurar notificaciones`. Aseguratede estar en `Modo productivo` y en la URL de producción, pegamos la URL que tenemos en `APP_URL` dentro de nuestro archivo `.env.local` (más el endpoint `/api/mercadopago` al final) y seleccionamos `Pagos` en "Eventos".
-
-![image](./screenshots/webhook-config.jpg)
-
-Si vamos a `Simular notificación` y emitimos, deberíamos ver un mensaje similar a este indicando de que hubo un error (ya que el pago no existe) y también deberíamos ver un log en la terminal de nuestro equipo local hacia `/api/mercadopago` incluyendo información sobre la notificación.
-
-![image](./screenshots/webhook-error.jpg)
-
-Si bien no funcionó, nos sirve por que sabemos que Mercado Pago puede comunicarse con nuestra aplicación.
 
 ## Recibir notificaciones
 

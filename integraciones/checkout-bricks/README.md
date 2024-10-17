@@ -2,14 +2,14 @@
 
 En este documento vamos a aprender a agregar pagos a nuestra aplicación utilizando Mercado Pago Checkout Bricks. Los usuarios van a poder agregar mensajes a una lista de mensajes pagando por cada mensaje.
 
-Antes de continuar, asegurate de haber [creado una aplicación en Mercado Pago](https://www.mercadopago.com.ar/developers/panel/app) y copiado las `credenciales de prueba` a tu archivo `.env.local`.
+Antes de continuar, asegurate de haber [creado una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md) y copiado las [`credenciales de prueba`](../../configuracion/credenciales/README.md) a tu archivo `.env.example` y renombrarlo a `.env.local`.
 
-## Indice
+## Índice
 
 1. [Revisando nuestra aplicación](#revisando-nuestra-aplicación)
 2. [Crear el formulario de pago](#crear-el-formulario-de-pago)
 3. [Efectivizar el pago](#efectivizar-el-pago)
-4. [Realizar un pago de prueba](#realizar-un-pago-de-prueba)
+4. [Probar la integración](#probar-la-integración)
 5. [Consideraciones](#consideraciones)
 
 ## Revisando nuestra aplicación
@@ -163,7 +163,7 @@ const api = {
 > [!NOTE]
 > Cuando el usuario hizo submit del formulario, en realidad no pagó, sino que generó un token de pago para posteriormente (una vez que validemos los datos desde el servidor) podamos efectivizar el pago como hacemos ahora.
 
-## Realizar un pago de prueba
+## Probar la integración
 
 Ahora vamos a nuestra aplicación, cargamos un mensaje, llenamos el formulario con los datos que tenemos en `Tarjetas de prueba` en nuestra aplicación de Mercado Pago y presionamos `Pagar`. Después de unos segundos deberíamos ver la página actualizada con nuestro nuevo mensaje.
 
@@ -173,4 +173,4 @@ Siempre asegurate de validar los montos y estado de los pagos. En una aplicació
 
 ---
 
-[Volver al inicio](../README.md)
+[Volver al inicio](../../README.md)
