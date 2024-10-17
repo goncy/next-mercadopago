@@ -8,11 +8,9 @@ Antes de continuar, asegurate de haber [creado una aplicación en Mercado Pago](
 
 1. [Revisando nuestra aplicación](#revisando-nuestra-aplicación)
 2. [Crear una suscripción](#crear-una-suscripción)
-3. [Realizar una suscripción de prueba](#realizar-una-suscripción-de-prueba)
-4. [Configurar webhook de notificaciones](#configurar-webhook-de-notificaciones)
-5. [Recibir notificaciones](#recibir-notificaciones)
-6. [Actualizar el estado de la suscripción](#actualizar-el-estado-de-la-suscripción)
-7. [Probar la integración](#probar-la-integración)
+3. [Recibir notificaciones](#recibir-notificaciones)
+4. [Actualizar el estado de la suscripción](#actualizar-el-estado-de-la-suscripción)
+5. [Probar la integración](#probar-la-integración)
 
 ## Revisando nuestra aplicación
 
