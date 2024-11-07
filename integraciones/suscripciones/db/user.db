@@ -1,1 +1,5 @@
-{"id":1,"name":"Goncy","email":"test_user_2108471658@testuser.com","suscription":"f28161fd559b40cfb78fca0556d3da68"}
+{
+  "id": 1,
+  "name": "Goncy",
+  "marketplace": null
+}
