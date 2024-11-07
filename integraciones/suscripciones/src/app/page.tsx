@@ -23,7 +23,7 @@ export default async function SuscripcionesPage() {
 
     await api.message.add(message as string);
 
-    revalidatePath("/suscripciones");
+    revalidatePath("/");
   }
 
   return (

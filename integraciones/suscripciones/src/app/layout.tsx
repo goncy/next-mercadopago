@@ -17,10 +17,6 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           <Link className="text-xl font-bold" href="/">
             Next.js + Mercado Pago
           </Link>
-          <nav className="flex gap-4">
-            <Link href="/">Pagos</Link>
-            <Link href="/suscripciones">Suscripciones</Link>
-          </nav>
         </header>
         <main className="py-8">{children}</main>
         <footer className="text-center leading-[4rem] opacity-70">
