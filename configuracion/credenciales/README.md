@@ -7,9 +7,9 @@ Las credenciales pueden ser de dos tipos:
 - **Credenciales de producción**: Usamos estas credenciales para interactuar con Mercado Pago en un entorno real.
 - **Credenciales de prueba**: Usamos estas credenciales para interactuar con Mercado Pago en un entorno de pruebas.
 
-Pero no todo es tan simple... En algunas integraciones, como `Checkout Bricks`, vamos a crear una aplicación y durante la etapa de desarrollo vamos a usar las credenciales de prueba de esa aplicación.
+Pero no todo es tan simple... En algunas integraciones, como `Checkout Bricks` o `Suscripciones`, vamos a crear una aplicación y durante la etapa de desarrollo vamos a usar las credenciales de prueba de esa aplicación.
 
-Pero para otras integraciones, como `Checkout Pro` o `Suscripciones`...
+Pero para otras integraciones, como `Checkout Pro` o `Marketplace`...
 
 ![image](./screenshots/prueba-checkoutpro.jpg)
 
