@@ -6,7 +6,6 @@ Las cuentas de prueba son importantes durante el periodo de desarrollo ya que co
 
 - [Crear cuentas de prueba](#crear-cuentas-de-prueba)
 - [Tarjetas de prueba](#tarjetas-de-prueba)
-- [Credenciales](#credenciales)
 
 ## Crear cuentas de prueba
 
