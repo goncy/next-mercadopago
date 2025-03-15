@@ -1,4 +1,4 @@
-# Integración de Mercado Pago con Checkout Pro y Marketplace
+# Integración de Mercado Pago con Checkout Pro y Split de pagos (Marketplace)
 
 En este documento vamos a aprender a agregar pagos a nuestra aplicación utilizando Mercado Pago Checkout Pro con la funcionalidad de Marketplace. Los usuarios van a poder agregar mensajes a una lista de mensajes pagando por cada mensaje y el intermediario (Marketplace) se queda con una parte de la venta.
 
