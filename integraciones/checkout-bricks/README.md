@@ -49,9 +49,9 @@ export default async function HomePage() {
   return (
     <section className="grid gap-8">
       <MessageForm amount={100} onSubmitAction={add} />
-      <ul className="grid gap-2">
+      <ul>
         {messages.map((message) => (
-          <li key={message.id} className="rounded bg-blue-400/10 p-4">
+          <li key={message.id}>
             {message.text}
           </li>
         ))}
@@ -118,7 +118,6 @@ export default function MessageForm({
     <form ref={formRef}>
       <textarea
         required
-        className="w-full border-2 border-blue-400 p-2"
         name="message"
         placeholder="Hola perro"
         rows={3}

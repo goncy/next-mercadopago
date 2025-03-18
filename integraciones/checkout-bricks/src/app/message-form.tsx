@@ -48,13 +48,7 @@ export default function MessageForm({
   // Renderizamos el componente de bricks
   return (
     <form ref={formRef}>
-      <textarea
-        required
-        className="w-full border-2 border-blue-400 p-2"
-        name="message"
-        placeholder="Hola perro"
-        rows={3}
-      />
+      <textarea required name="message" placeholder="Hola perro" rows={3} />
       <CardPayment
         customization={{paymentMethods: {maxInstallments: 1, minInstallments: 1}}}
         initialization={{amount}}

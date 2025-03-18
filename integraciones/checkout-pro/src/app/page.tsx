@@ -19,22 +19,13 @@ export default async function HomePage() {
 
   return (
     <section className="grid gap-8">
-      <form action={add} className="grid gap-2">
-        <textarea
-          className="border-2 border-blue-400 p-2"
-          name="text"
-          placeholder="Hola perro"
-          rows={3}
-        />
-        <button className="rounded bg-blue-400 p-2" type="submit">
-          Enviar
-        </button>
+      <form action={add}>
+        <textarea name="text" placeholder="Hola perro" rows={3} />
+        <button type="submit">Enviar</button>
       </form>
-      <ul className="grid gap-2">
+      <ul>
         {messages.map((message) => (
-          <li key={message.id} className="rounded bg-blue-400/10 p-4">
-            {message.text}
-          </li>
+          <li key={message.id}>{message.text}</li>
         ))}
       </ul>
     </section>

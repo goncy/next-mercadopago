@@ -27,28 +27,17 @@ export default async function MarketplacePage() {
     <section className="grid gap-8">
       {/* Si el usuario ya autorizó la integración, mostramos el formulario */}
       {user.marketplace ? (
-        <form action={add} className="grid gap-2">
-          <textarea
-            className="border-2 border-blue-400 p-2"
-            name="text"
-            placeholder="Hola perro"
-            rows={3}
-          />
-          <button className="rounded bg-blue-400 p-2" type="submit">
-            Enviar
-          </button>
+        <form action={add}>
+          <textarea name="text" placeholder="Hola perro" rows={3} />
+          <button type="submit">Enviar</button>
         </form>
       ) : (
         // Si no autorizó la integración, mostramos un botón para redirigirlo a Mercado Pago a autorizar
-        <a className="rounded bg-blue-400 p-2 text-center" href={authorizationUrl}>
-          Conectar Mercado Pago
-        </a>
+        <a href={authorizationUrl}>Conectar Mercado Pago</a>
       )}
-      <ul className="grid gap-2">
+      <ul>
         {messages.map((message) => (
-          <li key={message.id} className="rounded bg-blue-400/10 p-4">
-            {message.text}
-          </li>
+          <li key={message.id}>{message.text}</li>
         ))}
       </ul>
     </section>

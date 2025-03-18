@@ -49,9 +49,9 @@ export default async function HomePage() {
   return (
     <section className="grid gap-8">
       <MessageForm amount={100} onSubmitAction={add} />
-      <ul className="grid gap-2">
+      <ul>
         {messages.map((message) => (
-          <li key={message.id} className="rounded bg-blue-400/10 p-4">
+          <li key={message.id}>
             {message.text}
           </li>
         ))}
@@ -103,10 +103,9 @@ export default function MessageForm({
 
   // Renderizamos el formulario con los campos de pago
   return (
-    <Form action={handleSubmit} className="flex flex-col gap-4">
+    <Form action={handleSubmit}>
       <textarea
         required
-        className="w-full border-2 border-blue-400 p-2"
         name="message"
         placeholder="Hola perro"
         rows={3}
@@ -114,9 +113,9 @@ export default function MessageForm({
       <CardNumber placeholder="1234 1234 1234 1234" />
       <SecurityCode placeholder="123" />
       <ExpirationDate placeholder="12/2025" />
-      <input className="border-2 border-blue-400 p-2" name="name" type="text" placeholder="Nombre" />
-      <input className="border-2 border-blue-400 p-2" name="email" type="email" placeholder="Email" />
-      <button className="rounded bg-blue-400 p-2" type="submit">Pagar</button>
+      <input name="name" placeholder="Nombre" type="text" />
+      <input name="email" placeholder="Email" type="email" />
+      <button type="submit">Pagar</button>
     </Form>
   );
 }

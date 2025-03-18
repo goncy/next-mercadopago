@@ -30,11 +30,9 @@ export default async function HomePage() {
   return (
     <section className="grid gap-8">
       <MessageForm amount={100} onSubmitAction={add} />
-      <ul className="grid gap-2">
+      <ul>
         {messages.map((message) => (
-          <li key={message.id} className="rounded bg-blue-400/10 p-4">
-            {message.text}
-          </li>
+          <li key={message.id}>{message.text}</li>
         ))}
       </ul>
     </section>

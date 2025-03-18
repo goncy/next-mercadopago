@@ -73,6 +73,9 @@ npm run dev
 
 Si vamos al navegador y accedemos a `http://localhost:3000` deberíamos ver la aplicación funcionando.
 
+> [!NOTE]
+> Algunas integraciones como `Checkout Bricks` o `Checkout API` necesitan correr en una conexión segura (HTTPS). Los proyectos ya están configurados usando el flag [`--experimental-https` de Next.js](https://nextjs.org/docs/app/api-reference/cli/next#using-https-during-development). En esos casos recordá ingresar a `https://localhost:3000` en vez de `http://localhost:3000`. También recordalo a la hora de [exponer el puerto](../exponer-puerto/README.md) o cualquier cosa que refiera a localhost.
+
 ---
 
 [Volver al inicio](../../README.md)

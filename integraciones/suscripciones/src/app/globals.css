@@ -1,9 +1,39 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   color-scheme: dark;
   color: CanvasText;
   background-color: Canvas;
+
+  --primary: hsl(204, 70%, 50%);
+  --primary-foreground: hsl(0 0% 98%);
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+}
+
+/* Estilos base de la aplicación */
+@layer base {
+  form {
+    @apply grid gap-2;
+
+    input, select, textarea, div {
+      @apply border border-primary rounded p-2 w-full min-h-10;
+    }
+
+    button {
+      @apply bg-primary text-primary-foreground rounded p-2 w-full;
+    }
+  }
+
+
+  ul {
+    @apply grid gap-2;
+
+    li {
+      @apply rounded bg-primary/20 p-4;
+    }
+  }
 }
