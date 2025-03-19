@@ -9,7 +9,7 @@ Las cuentas de prueba son importantes durante el periodo de desarrollo ya que co
 
 ## Crear cuentas de prueba
 
-Vamos a ir `Cuentas de prueba` en el menú izquierdo y tocamos el botón de `Crear cuenta de prueba`.
+Luego de haber [creado una aplicación](./crear-aplicacion.md) vamos a acceder a ella y luego vamos a ir `Cuentas de prueba` en el menú izquierdo y tocamos el botón de `Crear cuenta de prueba`.
 
 ![image](./screenshots/crear-cuentas.jpg)
 
@@ -20,7 +20,7 @@ Vamos a darle un nombre, un país y un monto inicial de crédito a la cuenta.
 
 ![image](./screenshots/form-cuenta.jpg)
 
-Luego abrimos una ventana de incognito y nos logueamos con la cuenta de prueba desde el navegador de esa cuenta para asegurarnos de que la creamos correctamente.
+Luego abrimos una ventana de incógnito (u otro perfil del navegador) y nos logueamos con la cuenta de prueba para asegurarnos de que la creamos correctamente.
 
 ![image](./screenshots/login-prueba.jpg)
 
