@@ -22,10 +22,10 @@
     input, select, textarea, div {
       @apply border border-primary rounded p-2 w-full min-h-10;
     }
+  }
 
-    button, a[href*="mercadopago"] {
-      @apply bg-primary text-primary-foreground rounded p-2 w-full;
-    }
+  button, a[href*="mercadopago"] {
+    @apply bg-primary text-primary-foreground rounded p-2 w-full text-center cursor-pointer;
   }
 
 

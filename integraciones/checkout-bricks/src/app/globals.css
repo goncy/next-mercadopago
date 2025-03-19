@@ -19,7 +19,7 @@
   form {
     @apply grid gap-2;
 
-    input, select, textarea, div {
+    input, select, textarea {
       @apply border border-primary rounded p-2 w-full min-h-10;
     }
 
