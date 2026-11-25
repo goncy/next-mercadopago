@@ -9,11 +9,17 @@ Podés preparar todo de dos formas:
 
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
-1. Creá una aplicación de Checkout Pro llamada next-mercadopago-checkout-pro. Mostrame el resumen antes de crearla.
-2. Creá una cuenta de prueba compradora con 10000 de saldo y mostrame su usuario y contraseña.
+1. Creá una aplicación de Checkout Pro llamada <tu usuario>-next-mercadopago-checkout-pro. Mostrame el resumen antes de crearla.
+2. Cargale 10000 de saldo a la cuenta de prueba compradora que se creó con la aplicación y mostrame su usuario.
 3. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de prueba y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
-4. Configurá el webhook en <URL pública>/api/mercadopago para los eventos de Pagos.
 ```
+
+Reemplazá también `<tu usuario>`: los nombres de las aplicaciones no se pueden repetir.
+
+Cuando creás la aplicación, Mercado Pago también crea una cuenta de prueba vendedora y una compradora. El MCP no muestra la contraseña de la compradora: la encontrás en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app), en la aplicación, en `Cuentas de prueba`. Pagá con esa cuenta: si en el navegador tenés abierta la sesión de la vendedora, el botón de pagar queda deshabilitado porque no te podés pagar a vos mismo.
+
+> [!NOTE]
+> No hace falta configurar un webhook: cada preferencia le pasa `APP_URL` a Mercado Pago como `notification_url`. El token de prueba es de la cuenta vendedora que creó Mercado Pago, y el MCP no puede configurar webhooks en esa cuenta.
 
 ## Video
 
@@ -101,6 +107,15 @@ const api = {
           },
           // Marcamos el pago como mensaje para poder buscarlo después
           external_reference: "message",
+          // Le pedimos a Mercado Pago que nos notifique los cambios del pago en nuestro webhook
+          notification_url: `${process.env.APP_URL}/api/mercadopago`,
+          // Volvemos a nuestra aplicación después de pagar, automáticamente si el pago se aprueba
+          back_urls: {
+            success: process.env.APP_URL,
+            pending: process.env.APP_URL,
+            failure: process.env.APP_URL,
+          },
+          auto_return: "approved",
         },
       });
 
@@ -113,7 +128,11 @@ const api = {
 
 Podemos pensar a la preferencia de pago como un objeto que representa una orden de compra. algo que un usuario quiere comprar.
 
-Hay varias propiedades más que podemos agregar a la preferencia de pago, como la URL a la cual se va a redirigir al usuario luego de pagar. Una descripción más extensa del producto, etc. Podés ver más [acá](https://www.mercadopago.com.ar/developers/es/reference/preferences/_checkout_preferences/post).
+Con `notification_url` cada preferencia le dice a Mercado Pago a dónde notificar sus pagos, usando la URL pública que guardamos en `APP_URL`. Así las notificaciones llegan aunque las credenciales sean de una cuenta de prueba que no configuramos nosotros.
+
+Con `back_urls` Mercado Pago muestra un botón para volver a nuestra aplicación después de pagar, y con `auto_return: "approved"` nos lleva solo cuando el pago se aprueba.
+
+Hay varias propiedades más que podemos agregar a la preferencia de pago. Una descripción más extensa del producto, etc. Podés ver más [acá](https://www.mercadopago.com.ar/developers/es/reference/preferences/_checkout_preferences/post).
 
 ## Recibir notificaciones
 
@@ -127,7 +146,12 @@ import {mercadopago} from "@/api";
 
 export async function POST(request: Request) {
   // Obtenemos el cuerpo de la petición que incluye información sobre la notificación
-  const body: {data: {id: string}} = await request.json();
+  const body: {data?: {id: string}; type?: string} = await request.json();
+
+  // Solo nos interesan las notificaciones de pagos, ignoramos el resto (como las de `merchant_order`)
+  if (body.type !== "payment" || !body.data?.id) {
+    return new Response(null, {status: 200});
+  }
 
   // Obtenemos el pago
   const payment = await new Payment(mercadopago).get({id: body.data.id});

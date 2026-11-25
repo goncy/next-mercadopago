@@ -42,6 +42,15 @@ const api = {
           },
           // Marcamos el pago como mensaje para poder buscarlo después
           external_reference: "message",
+          // Le pedimos a Mercado Pago que nos notifique los cambios del pago en nuestro webhook
+          notification_url: `${process.env.APP_URL}/api/mercadopago`,
+          // Volvemos a nuestra aplicación después de pagar, automáticamente si el pago se aprueba
+          back_urls: {
+            success: process.env.APP_URL,
+            pending: process.env.APP_URL,
+            failure: process.env.APP_URL,
+          },
+          auto_return: "approved",
         },
       });
 
