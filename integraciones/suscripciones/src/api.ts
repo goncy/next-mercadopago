@@ -1,36 +1,19 @@
 import {MercadoPagoConfig, PreApproval} from "mercadopago";
 import {cacheLife, cacheTag} from "next/cache";
-
-import {read, write} from "@/db";
-
-interface Message {
-  id: number;
-  text: string;
-}
-
-interface User {
-  id: number;
-  name: string;
-  suscription: string | null;
-  email: string;
-}
-
-const INITIAL_MESSAGES: Message[] = [
-  {id: 1, text: "Espero ya te hayas suscrito a mi canal de YouTube"},
-];
-const INITIAL_USER: User = {id: 1, name: "Goncy", suscription: null, email: ""};
+import {cookies} from "next/headers";
 
 export const mercadopago = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
 });
 
 const api = {
-  user: {
-    async suscribe(email: string) {
+  suscription: {
+    async create(email: string) {
+      // Creamos una suscripción sin plan asociado y con pago pendiente
       const suscription = await new PreApproval(mercadopago).create({
         body: {
           back_url: process.env.APP_URL!,
-          reason: "Suscripción a mensajes de muro",
+          reason: "Suscripción a contenido exclusivo",
           auto_recurring: {
             frequency: 1,
             frequency_type: "months",
@@ -42,40 +25,39 @@ const api = {
         },
       });
 
-      return suscription.init_point!;
-    },
-    async fetch(): Promise<User> {
-      "use cache";
+      // Guardamos el id de la suscripción en una cookie para saber de quién es
+      const cookieStore = await cookies();
 
-      cacheLife("max");
-      cacheTag("user");
-
-      return read("user", INITIAL_USER);
-    },
-    async update(data: Partial<User>) {
-      const user = await api.user.fetch();
-
-      write("user", {...user, ...data});
-    },
-  },
-  message: {
-    async add(message: string) {
-      const messages = await api.message.list();
-
-      messages.push({
-        id: messages.length + 1,
-        text: message,
+      cookieStore.set("suscription", suscription.id!, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
       });
 
-      write("message", messages);
+      // Devolvemos el init point (url de pago) para que el usuario pueda pagar
+      return suscription.init_point!;
     },
-    async list(): Promise<Message[]> {
+    async active() {
+      // Leemos el id de la suscripción de la cookie
+      const cookieStore = await cookies();
+      const id = cookieStore.get("suscription")?.value;
+
+      // Si no hay suscripción, no está activa
+      if (!id) return false;
+
+      // Mercado Pago es nuestra base de datos: le preguntamos el estado de la suscripción
+      return (await api.suscription.status(id)) === "authorized";
+    },
+    async status(id: string) {
+      // Cacheamos el estado hasta que el webhook nos avise que cambió
       "use cache";
 
       cacheLife("max");
-      cacheTag("messages");
+      cacheTag(`suscription-${id}`);
 
-      return read("message", INITIAL_MESSAGES);
+      const suscription = await new PreApproval(mercadopago).get({id});
+
+      return suscription.status;
     },
   },
 };

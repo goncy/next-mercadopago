@@ -1,25 +1,40 @@
 import {redirect} from "next/navigation";
+import {Suspense} from "react";
 
 import api from "@/api";
 
-// Queremos que esta página sea estática, invalidamos el usuario y los mensajes cuando cambian
-export const ensureStatic = "navigation";
+// La página lee la cookie del vendedor en cada request, pero el resto de la página (el shell) sigue siendo estático
+export const ensureStatic = "shell";
 
-export default async function MarketplacePage() {
-  // Obtenemos el usuario y los mensajes
-  const user = await api.user.fetch();
-  const messages = await api.message.list();
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={<p>Cargando...</p>}>
+      <Marketplace />
+    </Suspense>
+  );
+}
 
-  // Obtenemos la URL de autorización
-  const authorizationUrl = await api.user.authorize();
+async function Marketplace() {
+  // Obtenemos el access token del vendedor
+  const marketplace = await api.user.token();
+
+  // Si no autorizó la integración, mostramos un botón para redirigirlo a Mercado Pago a autorizar
+  if (!marketplace) {
+    const authorizationUrl = await api.user.authorize();
+
+    return <a href={authorizationUrl}>Conectar Mercado Pago</a>;
+  }
+
+  // Obtenemos los mensajes del vendedor
+  const messages = await api.message.list(marketplace);
 
   // Creamos una preferencia de pago y redirigimos al usuario a Mercado Pago
   async function add(formData: FormData) {
     "use server";
 
     const message = formData.get("text") as string;
-    // Obtenemos el usuario en el servidor para no exponer su access token en el formulario
-    const {marketplace} = await api.user.fetch();
+    // Leemos el access token en el servidor para no exponerlo en el formulario
+    const marketplace = await api.user.token();
     const url = await api.message.submit(message, marketplace!);
 
     redirect(url);
@@ -27,16 +42,10 @@ export default async function MarketplacePage() {
 
   return (
     <section className="grid gap-8">
-      {/* Si el usuario ya autorizó la integración, mostramos el formulario */}
-      {user.marketplace ? (
-        <form action={add}>
-          <textarea name="text" placeholder="Hola perro" rows={3} />
-          <button type="submit">Enviar</button>
-        </form>
-      ) : (
-        // Si no autorizó la integración, mostramos un botón para redirigirlo a Mercado Pago a autorizar
-        <a href={authorizationUrl}>Conectar Mercado Pago</a>
-      )}
+      <form action={add}>
+        <textarea name="text" placeholder="Hola perro" rows={3} />
+        <button type="submit">Enviar</button>
+      </form>
       <section className="grid gap-3">
         <h2>Mensajes</h2>
         <ul>
