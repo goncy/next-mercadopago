@@ -1,12 +1,16 @@
-import {readFileSync, writeFileSync} from "node:fs";
-
 import {MercadoPagoConfig, Payment} from "mercadopago";
 import {cacheLife, cacheTag} from "next/cache";
+
+import {read, write} from "@/db";
 
 interface Message {
   id: number;
   text: string;
 }
+
+const INITIAL_MESSAGES: Message[] = [
+  {id: 1, text: "Espero ya te hayas suscrito a mi canal de YouTube"},
+];
 
 export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TOKEN!});
 
@@ -19,11 +23,8 @@ const api = {
       cacheLife("max");
       cacheTag("messages");
 
-      // Leemos el archivo de la base de datos de los mensajes
-      const db = readFileSync("db/message.db");
-
-      // Devolvemos los datos como un array de objetos
-      return JSON.parse(db.toString());
+      // Leemos los mensajes guardados
+      return read("message", INITIAL_MESSAGES);
     },
     async add(message: Message): Promise<void> {
       // Obtenemos los mensajes
@@ -33,7 +34,7 @@ const api = {
       const draft = db.concat(message);
 
       // Guardamos los datos
-      writeFileSync("db/message.db", JSON.stringify(draft, null, 2));
+      write("message", draft);
     },
     async buy(data: {amount: number; email: string; installments: number; token: string}) {
       // Creamos el pago con los datos del brick

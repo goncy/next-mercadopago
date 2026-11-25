@@ -96,7 +96,7 @@ export default async function SuscripcionesPage() {
 ```
 
 > [!NOTE]
-> En esta aplicación de ejemplo siempre vamos a tener un usuario (que se obtiene desde `/db/user.db`), lo único que vamos a hacer es interactuar con la propiedad `suscription` del usuario. En una aplicación real vas a manejar la lógica de autenticación normalmente.
+> En esta aplicación de ejemplo siempre vamos a tener un usuario (que se guarda en `tmp/user.json`, ver `src/db.ts`), lo único que vamos a hacer es interactuar con la propiedad `suscription` del usuario. En una aplicación real vas a manejar la lógica de autenticación normalmente.
 
 ## Crear una suscripción
 

@@ -35,3 +35,6 @@ yarn-error.log*
 next-env.d.ts
 
 certificates
+
+# datos locales (ver src/db.ts)
+/tmp
