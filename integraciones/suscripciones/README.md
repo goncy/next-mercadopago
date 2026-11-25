@@ -24,7 +24,7 @@ import {redirect} from "next/navigation";
 
 import api from "@/api";
 
-// La página lee la cookie de la suscripción en cada request, `loading.tsx` la envuelve en un Suspense y el resto (el shell) sigue siendo estático
+// La página lee la cookie de la suscripción en cada request, pero el layout y `loading.tsx` siguen siendo estáticos
 export const ensureStatic = "shell";
 
 export default async function SuscripcionesPage() {
@@ -92,11 +92,7 @@ const api = {
       // Guardamos el id de la suscripción en una cookie para saber de quién es
       const cookieStore = await cookies();
 
-      cookieStore.set("suscription", suscription.id!, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-      });
+      cookieStore.set("suscription", suscription.id!, {httpOnly: true});
 
       // Devolvemos el init point (url de pago) para que el usuario pueda pagar
       return suscription.init_point!;
@@ -127,7 +123,9 @@ const api = {
       if (!id) return false;
 
       // Mercado Pago es nuestra base de datos: le preguntamos el estado de la suscripción
-      return (await api.suscription.status(id)) === "authorized";
+      const status = await api.suscription.status(id);
+
+      return status === "authorized";
     },
     async status(id: string) {
       // Cacheamos el estado hasta que el webhook nos avise que cambió
@@ -136,6 +134,7 @@ const api = {
       cacheLife("max");
       cacheTag(`suscription-${id}`);
 
+      // Obtenemos la suscripción y devolvemos su estado
       const suscription = await new PreApproval(mercadopago).get({id});
 
       return suscription.status;

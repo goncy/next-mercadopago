@@ -2,7 +2,7 @@ import {MercadoPagoConfig, Payment, Preference} from "mercadopago";
 import {cacheLife, cacheTag} from "next/cache";
 
 interface Message {
-  id: number;
+  id: string;
   text: string;
 }
 
@@ -19,16 +19,11 @@ const api = {
 
       // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`
       const {results = []} = await new Payment(mercadopago).search({
-        options: {
-          external_reference: "message",
-          status: "approved",
-          sort: "date_created",
-          criteria: "asc",
-        },
+        options: {external_reference: "message", status: "approved"},
       });
 
       // Devolvemos los pagos como mensajes
-      return results.map((payment) => ({id: Number(payment.id), text: payment.metadata.text}));
+      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
     },
     async submit(text: Message["text"]) {
       // Creamos la preferencia incluyendo el precio, titulo y metadata. La información de `items` es standard de Mercado Pago. La información que nosotros necesitamos para nuestra DB debería vivir en `metadata`.

@@ -144,7 +144,7 @@ const api = {
       data: {amount: number; email: string; installments: number; token: string},
     ) {
       // Creamos el pago con los datos del brick
-      const payment = await new Payment(mercadopago).create({
+      await new Payment(mercadopago).create({
         body: {
           payer: {
             email: data.email,
@@ -157,9 +157,6 @@ const api = {
           external_reference: "message",
         },
       });
-
-      // Devolvemos el pago
-      return payment;
     },
   },
 };
@@ -184,16 +181,11 @@ const api = {
 
       // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`
       const {results = []} = await new Payment(mercadopago).search({
-        options: {
-          external_reference: "message",
-          status: "approved",
-          sort: "date_created",
-          criteria: "asc",
-        },
+        options: {external_reference: "message", status: "approved"},
       });
 
       // Devolvemos los pagos como mensajes
-      return results.map((payment) => ({id: Number(payment.id), text: payment.metadata.text}));
+      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
     },
   },
 };

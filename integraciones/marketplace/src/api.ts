@@ -3,7 +3,7 @@ import {cacheLife, cacheTag} from "next/cache";
 import {cookies} from "next/headers";
 
 interface Message {
-  id: number;
+  id: string;
   text: string;
 }
 
@@ -43,12 +43,7 @@ const api = {
       // Guardamos el access token en una cookie que solo puede leer el servidor
       const cookieStore = await cookies();
 
-      cookieStore.set("marketplace", credentials.access_token!, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: credentials.expires_in,
-      });
+      cookieStore.set("marketplace", credentials.access_token!, {httpOnly: true});
     },
   },
   message: {
@@ -59,24 +54,20 @@ const api = {
       cacheLife("max");
       cacheTag("messages");
 
+      // Creamos el cliente de Mercado Pago usando el access token del vendedor
+      const client = new MercadoPagoConfig({accessToken: marketplace});
+
       // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado en la cuenta del vendedor con el texto en su `metadata`
-      const {results = []} = await new Payment(
-        new MercadoPagoConfig({accessToken: marketplace}),
-      ).search({
-        options: {
-          external_reference: "message",
-          status: "approved",
-          sort: "date_created",
-          criteria: "asc",
-        },
+      const {results = []} = await new Payment(client).search({
+        options: {external_reference: "message", status: "approved"},
       });
 
       // Devolvemos los pagos como mensajes
-      return results.map((payment) => ({id: Number(payment.id), text: payment.metadata.text}));
+      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
     },
     async submit(text: Message["text"], marketplace: string) {
-      // Creamos el cliente de Mercado Pago usando el access token del Marketplace
-      const client: MercadoPagoConfig = new MercadoPagoConfig({accessToken: marketplace});
+      // Creamos el cliente de Mercado Pago usando el access token del vendedor
+      const client = new MercadoPagoConfig({accessToken: marketplace});
 
       // Creamos la preferencia incluyendo el precio, titulo y metadata. La información de `items` es standard de Mercado Pago. La información que nosotros necesitamos para nuestra DB debería vivir en `metadata`.
       const preference = await new Preference(client).create({
