@@ -15,6 +15,7 @@ const api = {
     async list(): Promise<Message[]> {
       // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
       "use cache";
+
       cacheLife("max");
       cacheTag("messages");
 

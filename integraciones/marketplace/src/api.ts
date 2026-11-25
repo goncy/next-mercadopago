@@ -21,6 +21,7 @@ const api = {
     async fetch(): Promise<User> {
       // Cacheamos el usuario hasta que lo invalidemos con el tag "user"
       "use cache";
+
       cacheLife("max");
       cacheTag("user");
 
@@ -71,6 +72,7 @@ const api = {
     async list(): Promise<Message[]> {
       // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
       "use cache";
+
       cacheLife("max");
       cacheTag("messages");
 

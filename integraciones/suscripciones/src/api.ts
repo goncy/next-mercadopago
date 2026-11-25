@@ -41,6 +41,7 @@ const api = {
     },
     async fetch(): Promise<User> {
       "use cache";
+
       cacheLife("max");
       cacheTag("user");
 
@@ -67,6 +68,7 @@ const api = {
     },
     async list(): Promise<Message[]> {
       "use cache";
+
       cacheLife("max");
       cacheTag("messages");
 
