@@ -9,7 +9,17 @@ Las cuentas de prueba son importantes durante el periodo de desarrollo ya que co
 
 ## Crear cuentas de prueba
 
-Luego de haber [creado una aplicación](./crear-aplicacion.md) vamos a acceder a ella y luego vamos a ir `Cuentas de prueba` en el menú izquierdo y tocamos el botón de `Crear cuenta de prueba`.
+Podés hacerlo de dos formas: **a mano**, siguiendo los pasos de abajo, o **con el MCP de Mercado Pago**: [configurá el MCP](../mcp/README.md) y copiá este prompt en tu agente.
+
+```text
+Usando el MCP de Mercado Pago, creá dos cuentas de prueba: una "seller" con la descripción "Vendedor" y una "buyer" con la descripción "Comprador" y 10000 de saldo. Mostrame el usuario y la contraseña de cada una.
+```
+
+Después abrí una ventana de incógnito e iniciá sesión con cada cuenta para comprobar que funcionan.
+
+### A mano
+
+Luego de haber [creado una aplicación](../crear-aplicacion/README.md) vamos a acceder a ella y luego vamos a ir `Cuentas de prueba` en el menú izquierdo y tocamos el botón de `Crear cuenta de prueba`.
 
 ![image](./screenshots/crear-cuentas.jpg)
 
@@ -27,6 +37,14 @@ Luego abrimos una ventana de incógnito (u otro perfil del navegador) y nos logu
 Ahora ya podemos usar la cuenta de prueba para interactuar con nuestras aplicaciones.
 
 ## Tarjetas de prueba
+
+Con el MCP, [configurado](../mcp/README.md), podés pedirle las tarjetas a tu agente:
+
+```text
+Usando el MCP de Mercado Pago, mostrame las tarjetas de prueba de mi país y qué nombre de titular y documento usar para que el pago sea aprobado, rechazado o quede pendiente.
+```
+
+### A mano
 
 La mayoría de las veces vamos a poder pagar con dinero en cuenta, pero si quisieramos hacer pagos de prueba con tarjetas, una vez que iniciamos sesión con nuestra cuenta de pruebas, entramos a [alguna de sus aplicaciones](https://www.mercadopago.com.ar/developers/panel/app/) (o creamos una aplicación si no la tenemos) y nos vamos a `Tarjetas de prueba`.
 

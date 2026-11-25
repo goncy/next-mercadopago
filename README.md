@@ -19,6 +19,7 @@ Vamos a tener diferentes carpetas y aplicaciones para cada tipo de integración,
     4. [Credenciales](./configuracion/credenciales/README.md): Que son y que tipo de credenciales existen, cuando y como usarlas.
     4. [Exponer un puerto públicamente](./configuracion/exponer-puerto/README.md): Como hacer que Mercado Pago se pueda comunicar con nuestra aplicación mientras corre en local, muy útil para recibir notificaciones de pago y suscripciones durante el desarrollo.
     5. [Recibir notificaciones de pago y suscripciones](./configuracion/webhook/README.md): Como configurar un webhook en nuestra aplicación para recibir notificaciones de pago y suscripciones.
+    6. [Configurar el MCP de Mercado Pago](./configuracion/mcp/README.md): Como conectar tu agente de IA a Mercado Pago para que cree aplicaciones, cuentas de prueba, credenciales y webhooks por vos. Cada paso que se puede hacer con el MCP tiene un prompt listo para copiar.
 
 ---
 
