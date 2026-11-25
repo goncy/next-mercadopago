@@ -12,14 +12,11 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en">
-      <body className="container m-auto grid min-h-screen max-w-screen-sm grid-rows-[auto_1fr_auto] px-4 font-sans antialiased">
+      <body className="container m-auto max-w-screen-sm px-4 antialiased">
         <header className="flex h-16 items-center border-b border-neutral-800 font-semibold">
-          <Link href="/">▲ Next.js + Mercado Pago</Link>
+          <Link href="/">Next.js + Mercado Pago (Suscripciones)</Link>
         </header>
         <main className="py-8">{children}</main>
-        <footer className="flex h-16 items-center justify-center text-xs text-neutral-500">
-          © {new Date().getFullYear()} Next.js + Mercado Pago
-        </footer>
       </body>
     </html>
   );
