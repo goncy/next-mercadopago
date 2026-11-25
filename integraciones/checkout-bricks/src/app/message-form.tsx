@@ -5,8 +5,8 @@ import type {
   ICardPaymentFormData,
 } from "@mercadopago/sdk-react/esm/bricks/cardPayment/type";
 
-import {useEffect, useRef} from "react";
 import {initMercadoPago, CardPayment} from "@mercadopago/sdk-react";
+import {useEffect, useRef} from "react";
 
 export default function MessageForm({
   onSubmitAction,

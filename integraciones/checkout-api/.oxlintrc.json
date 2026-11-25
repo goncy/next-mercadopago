@@ -1,0 +1,64 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "react", "jsx-a11y", "nextjs"],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": ["next-env.d.ts"],
+  "rules": {
+    "no-console": "warn",
+    "no-unused-vars": ["warn", {"args": "after-used", "argsIgnorePattern": "^_"}],
+    "no-var": "error",
+    "no-array-constructor": "error",
+    "prefer-const": "error",
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+
+    "typescript/ban-ts-comment": "error",
+    "typescript/no-empty-object-type": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-require-imports": "error",
+    "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-unsafe-function-type": "error",
+
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+    "react/incompatible-library": "warn",
+    "react/unsupported-syntax": "warn",
+    "react/display-name": "error",
+    "react/jsx-no-comment-textnodes": "error",
+    "react/jsx-no-target-blank": ["error", {"allowReferrer": true}],
+    "react/no-unescaped-entities": "error",
+    "react/no-unknown-property": "error",
+    "react/no-unstable-nested-components": "error",
+    "react/require-render-return": "error",
+    "react/button-has-type": "warn",
+    "react/function-component-definition": "warn",
+    "react/hook-use-state": "warn",
+    "react/jsx-boolean-value": "warn",
+    "react/jsx-curly-brace-presence": "warn",
+    "react/jsx-fragments": "warn",
+    "react/jsx-no-useless-fragment": ["warn", {"allowExpressions": true}],
+    "react/jsx-pascal-case": "warn",
+    "react/no-array-index-key": "warn",
+    "react/self-closing-comp": "warn",
+
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/no-static-element-interactions": "off",
+
+    "nextjs/no-img-element": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/app/layout.tsx"],
+      "rules": {
+        "react/purity": "off"
+      }
+    }
+  ]
+}

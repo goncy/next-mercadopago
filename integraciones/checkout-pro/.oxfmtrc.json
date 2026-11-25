@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "bracketSpacing": false,
+  "sortTailwindcss": {
+    "stylesheet": "./src/app/globals.css"
+  },
+  "sortImports": {
+    "internalPattern": [
+      "@/"
+    ],
+    "groups": [
+      "type",
+      "builtin",
+      "external",
+      "internal",
+      [
+        "parent",
+        "sibling",
+        "index"
+      ],
+      "style",
+      "unknown"
+    ]
+  },
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "*.md",
+    "*.css",
+    "*.json",
+    "*.yaml"
+  ]
+}
