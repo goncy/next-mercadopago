@@ -5,15 +5,20 @@ En este documento vamos a aprender a agregar suscripciones a nuestra aplicación
 Podés preparar todo de dos formas:
 
 - **A mano**: asegurate de haber [clonado el proyecto](../../configuracion/clonar-aplicacion/README.md), [creado una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md) (para producción), haber creado dos [cuentas de prueba](../../configuracion/cuentas-de-prueba/README.md) para Comprador y Vendedor, haber iniciado sesión en otro navegador con la cuenta de prueba de Vendedor y [crear una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md) (para desarrollo), haber [copiado las credenciales](../../configuracion/credenciales/README.md) de producción de la aplicación del Vendedor a tu archivo `.env.example` y renombrarlo a `.env.local`, haber [expuesto el puerto 3000 al exterior](../../configuracion/exponer-puerto/README.md) y haber [configurado un webhook](../../configuracion/webhook/README.md) para escuchar eventos de `Planes y Suscripciones`.
-- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md) y [exponé el puerto 3000](../../configuracion/exponer-puerto/README.md): en el prompt, reemplazá `<URL pública>` por esa URL.
+- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) con los dos servidores y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md) y [exponé el puerto 3000](../../configuracion/exponer-puerto/README.md). En el prompt, reemplazá `<URL pública>` por esa URL y `<tu usuario>` por tu usuario: los nombres de las aplicaciones no se pueden repetir.
 
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
-1. Creá una aplicación de Suscripciones llamada next-mercadopago-suscripciones. Mostrame el resumen antes de crearla.
-2. Creá una cuenta de prueba compradora con 10000 de saldo y mostrame su usuario y contraseña.
+1. Con mercadopago-mcp-server, creá una aplicación de Suscripciones llamada <tu usuario>-next-mercadopago-suscripciones. Mostrame el resumen antes de crearla.
+2. Cargale 10000 de saldo a la cuenta de prueba compradora que se creó con la aplicación y mostrame su usuario.
 3. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de prueba y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
-4. Configurá el webhook en <URL pública>/api/mercadopago para los eventos de Planes y suscripciones.
+4. Con mercadopago-vendedor, configurá el webhook en <URL pública>/api/mercadopago para los eventos de Planes y suscripciones, en la aplicación de la vendedora de prueba cuyas credenciales usaste en el paso 3. Si mercadopago-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
 ```
+
+El webhook se configura con `mercadopago-vendedor` porque las credenciales de prueba son de la aplicación de la vendedora de prueba: con tu cuenta principal, el MCP no puede modificarla. El usuario y la contraseña de la vendedora y de la compradora están en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app), en la aplicación, en `Cuentas de prueba`.
+
+> [!IMPORTANT]
+> Para suscribirte usá el email de la cuenta compradora de prueba: `test_user_<número>@testuser.com`, donde `<número>` es el de su usuario `TESTUSER<número>`. Con cualquier otro email, Mercado Pago responde `Both payer and collector must be real or test users`. Pagá con la sesión de la compradora, no con la de la vendedora.
 
 ## Indice
 
