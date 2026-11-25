@@ -1,4 +1,4 @@
-import {MercadoPagoConfig, Preference, OAuth} from "mercadopago";
+import {MercadoPagoConfig, OAuth, Payment, Preference} from "mercadopago";
 import {cacheLife, cacheTag} from "next/cache";
 
 import {read, write} from "@/db";
@@ -14,9 +14,6 @@ interface User {
   marketplace: string | null;
 }
 
-const INITIAL_MESSAGES: Message[] = [
-  {id: 1, text: "Espero ya te hayas suscrito a mi canal de YouTube"},
-];
 const INITIAL_USER: User = {id: 1, name: "Goncy", marketplace: null};
 
 export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TOKEN!});
@@ -78,23 +75,25 @@ const api = {
       cacheLife("max");
       cacheTag("messages");
 
-      // Leemos los mensajes guardados
-      return read("message", INITIAL_MESSAGES);
-    },
-    async add(message: Message): Promise<void> {
-      // Obtenemos los mensajes
-      const db = await api.message.list();
+      // Si el vendedor todavía no conectó su cuenta, no hay mensajes
+      const {marketplace} = await api.user.fetch();
 
-      // Si ya existe un mensaje con ese id, lanzamos un error
-      if (db.some((_message) => _message.id === message.id)) {
-        throw new Error("Message already added");
-      }
+      if (!marketplace) return [];
 
-      // Agregamos el nuevo mensaje
-      const draft = db.concat(message);
+      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado en la cuenta del vendedor con el texto en su `metadata`
+      const {results = []} = await new Payment(
+        new MercadoPagoConfig({accessToken: marketplace}),
+      ).search({
+        options: {
+          external_reference: "message",
+          status: "approved",
+          sort: "date_created",
+          criteria: "asc",
+        },
+      });
 
-      // Guardamos los datos
-      write("message", draft);
+      // Devolvemos los pagos como mensajes
+      return results.map((payment) => ({id: Number(payment.id), text: payment.metadata.text}));
     },
     async submit(text: Message["text"], marketplace: string) {
       // Creamos el cliente de Mercado Pago usando el access token del Marketplace
@@ -114,6 +113,8 @@ const api = {
           metadata: {
             text,
           },
+          // Marcamos el pago como mensaje para poder buscarlo después
+          external_reference: "message",
           // Le agregamos ARS 5 de comisión
           marketplace_fee: 5,
         },

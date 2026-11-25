@@ -1,16 +1,10 @@
 import {MercadoPagoConfig, Payment} from "mercadopago";
 import {cacheLife, cacheTag} from "next/cache";
 
-import {read, write} from "@/db";
-
 interface Message {
   id: number;
   text: string;
 }
-
-const INITIAL_MESSAGES: Message[] = [
-  {id: 1, text: "Espero ya te hayas suscrito a mi canal de YouTube"},
-];
 
 export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TOKEN!});
 
@@ -23,20 +17,23 @@ const api = {
       cacheLife("max");
       cacheTag("messages");
 
-      // Leemos los mensajes guardados
-      return read("message", INITIAL_MESSAGES);
-    },
-    async add(message: Message): Promise<void> {
-      // Obtenemos los mensajes
-      const db = await api.message.list();
+      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`
+      const {results = []} = await new Payment(mercadopago).search({
+        options: {
+          external_reference: "message",
+          status: "approved",
+          sort: "date_created",
+          criteria: "asc",
+        },
+      });
 
-      // Agregamos el nuevo mensaje
-      const draft = db.concat(message);
-
-      // Guardamos los datos
-      write("message", draft);
+      // Devolvemos los pagos como mensajes
+      return results.map((payment) => ({id: Number(payment.id), text: payment.metadata.text}));
     },
-    async buy(data: {amount: number; email: string; installments: number; token: string}) {
+    async buy(
+      text: Message["text"],
+      data: {amount: number; email: string; installments: number; token: string},
+    ) {
       // Creamos el pago con los datos del brick
       const payment = await new Payment(mercadopago).create({
         body: {
@@ -46,6 +43,9 @@ const api = {
           token: data.token,
           transaction_amount: data.amount,
           installments: data.installments,
+          // Guardamos el texto en la metadata y marcamos el pago como mensaje para poder buscarlo después
+          metadata: {text},
+          external_reference: "message",
         },
       });
 
