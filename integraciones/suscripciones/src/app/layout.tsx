@@ -13,7 +13,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en">
       <body className="container m-auto max-w-screen-sm px-4 antialiased">
-        <header className="flex h-16 items-center border-b border-neutral-800 font-semibold">
+        <header className="flex h-16 items-center border-b border-neutral-800 text-sm font-semibold sm:text-base">
           <Link href="/">Next.js + Mercado Pago (Suscripciones)</Link>
         </header>
         <main className="py-8">{children}</main>
