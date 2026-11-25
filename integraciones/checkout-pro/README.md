@@ -109,11 +109,9 @@ const api = {
           external_reference: "message",
           // Le pedimos a Mercado Pago que nos notifique los cambios del pago en nuestro webhook
           notification_url: `${process.env.APP_URL}/api/mercadopago`,
-          // Volvemos a nuestra aplicación después de pagar, automáticamente si el pago se aprueba
+          // Cuando el pago se aprueba, Mercado Pago vuelve solo a nuestra aplicación
           back_urls: {
             success: process.env.APP_URL,
-            pending: process.env.APP_URL,
-            failure: process.env.APP_URL,
           },
           auto_return: "approved",
         },
@@ -130,7 +128,7 @@ Podemos pensar a la preferencia de pago como un objeto que representa una orden 
 
 Con `notification_url` cada preferencia le dice a Mercado Pago a dónde notificar sus pagos, usando la URL pública que guardamos en `APP_URL`. Así las notificaciones llegan aunque las credenciales sean de una cuenta de prueba que no configuramos nosotros.
 
-Con `back_urls` Mercado Pago muestra un botón para volver a nuestra aplicación después de pagar, y con `auto_return: "approved"` nos lleva solo cuando el pago se aprueba.
+Con `auto_return: "approved"` Mercado Pago vuelve solo a nuestra aplicación cuando el pago se aprueba. Para eso necesita saber a dónde volver, así que también definimos `back_urls.success`.
 
 Hay varias propiedades más que podemos agregar a la preferencia de pago. Una descripción más extensa del producto, etc. Podés ver más [acá](https://www.mercadopago.com.ar/developers/es/reference/preferences/_checkout_preferences/post).
 
