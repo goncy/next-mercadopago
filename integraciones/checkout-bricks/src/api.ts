@@ -1,6 +1,7 @@
 import {readFileSync, writeFileSync} from "node:fs";
 
 import {MercadoPagoConfig, Payment} from "mercadopago";
+import {cacheLife, cacheTag} from "next/cache";
 
 interface Message {
   id: number;
@@ -12,6 +13,11 @@ export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_AC
 const api = {
   message: {
     async list(): Promise<Message[]> {
+      // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
+      "use cache";
+      cacheLife("max");
+      cacheTag("messages");
+
       // Leemos el archivo de la base de datos de los mensajes
       const db = readFileSync("db/message.db");
 

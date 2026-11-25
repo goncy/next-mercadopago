@@ -17,14 +17,14 @@ Antes de continuar, asegurate de haber [clonado el proyecto](../../configuracion
 En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) se renderiza un formulario llamado `MessageForm` que incluye un campo para escribir el mensaje y un formulario con campos de número de tarjeta, fecha de vencimiento y código de seguridad para realizar el pago. Adicionalmente se pide nombre e email los cuales son usados para generar un token de pago para luego efectivizar el pago. Al hacer submit de este formulario, se ejecuta un Server Action que recibe el mensaje y la información del pago y agrega el mensaje a la lista:
 
 ```tsx
-import {revalidatePath} from "next/cache";
+import {updateTag} from "next/cache";
 
 import MessageForm from "./message-form";
 
 import api from "@/api";
 
-// Queremos que esta página sea dinámica para siempre poder ver la información actualizada del usuario
-export const dynamic = "force-dynamic";
+// Queremos que esta página sea estática, invalidamos los mensajes cuando agregamos uno nuevo
+export const ensureStatic = "navigation";
 
 export default async function HomePage() {
   // Obtenemos los mensajes de la base de datos
@@ -42,8 +42,8 @@ export default async function HomePage() {
     // Añadimos el mensaje a la lista
     await api.message.add({text: message, id: payment.id!});
 
-    // Revalidamos la ruta para poder ver el formulario de agregar mensaje
-    revalidatePath("/");
+    // Invalidamos los mensajes para ver el nuevo mensaje en la lista
+    updateTag("messages");
   }
 
   return (
@@ -60,6 +60,9 @@ export default async function HomePage() {
   );
 }
 ```
+
+> [!NOTE]
+> La página es estática (`ensureStatic = "navigation"` hace que el build falle si algo la vuelve dinámica). `api.message.list` usa `"use cache"` con el tag `messages`, así que cuando agregamos un mensaje invalidamos ese tag con `updateTag` y la lista se actualiza al instante.
 
 ## Crear el formulario de pago
 

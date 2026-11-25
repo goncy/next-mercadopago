@@ -22,9 +22,12 @@ Independientemente de si el usuario tiene o no una suscripción activa, se rende
 
 ```tsx
 import {redirect} from "next/navigation";
-import {revalidatePath} from "next/cache";
+import {updateTag} from "next/cache";
 
 import api from "@/api";
+
+// Queremos que esta página sea estática, invalidamos el usuario y los mensajes cuando cambian
+export const ensureStatic = "navigation";
 
 export default async function SuscripcionesPage() {
   // Obtenemos los mensajes y el usuario
@@ -54,8 +57,8 @@ export default async function SuscripcionesPage() {
     // Agregamos el mensaje a nuestra lista
     await api.message.add(message as string);
 
-    // Revalidamos la página para que se muestren los mensajes actualizados
-    revalidatePath("/");
+    // Invalidamos los mensajes para que se muestren actualizados
+    updateTag("messages");
   }
 
   return (
@@ -136,6 +139,7 @@ Tenemos un Route Handler (`src/app/api/mercadopago/route.ts`) definido en nuestr
 
 ```ts
 import {PreApproval} from "mercadopago";
+import {revalidateTag} from "next/cache";
 
 import api, {mercadopago} from "@/api";
 
@@ -152,6 +156,9 @@ export async function POST(request: Request) {
     if (preapproval.status === "authorized") {
       // Actualizamos el usuario con el id de la suscripción
       await api.user.update({suscription: preapproval.id});
+
+      // Invalidamos el usuario para mostrar el formulario de mensajes
+      revalidateTag("user", {expire: 0});
     }
   }
 
@@ -165,7 +172,7 @@ export async function POST(request: Request) {
 
 ## Actualizar el estado de la suscripción
 
-Este Route Handler va a recibir las notificaciones de pago de Mercado Pago, va a obtener la suscripción usando el ID que nos llega en la notificación. En caso de que la suscripción haya sido autorizada, va a actualizar el usuario con el ID de la suscripción.
+Este Route Handler va a recibir las notificaciones de pago de Mercado Pago, va a obtener la suscripción usando el ID que nos llega en la notificación. En caso de que la suscripción haya sido autorizada, va a actualizar el usuario con el ID de la suscripción e invalidar el tag `user` (`api.user.fetch` usa `"use cache"` con ese tag) para que la página muestre el formulario de mensajes.
 
 En una aplicación real deberíamos verificar la concordancia de la clave secreta, devolver errores más descriptivos, actualizar la suscripción si el usuario se da de baja y más, pero por simplicidad y tiempo te voy a dejar esa tarea a vos, podés ver más [acá](https://www.mercadopago.com.ar/developers/es/docs/your-integrations/notifications/webhooks#configuracinatravsdetusintegraciones).
 

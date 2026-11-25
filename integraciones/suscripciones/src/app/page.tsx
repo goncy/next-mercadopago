@@ -1,7 +1,10 @@
-import {revalidatePath} from "next/cache";
+import {updateTag} from "next/cache";
 import {redirect} from "next/navigation";
 
 import api from "@/api";
+
+// Queremos que esta página sea estática, invalidamos el usuario y los mensajes cuando cambian
+export const ensureStatic = "navigation";
 
 export default async function SuscripcionesPage() {
   const messages = await api.message.list();
@@ -23,7 +26,7 @@ export default async function SuscripcionesPage() {
 
     await api.message.add(message as string);
 
-    revalidatePath("/");
+    updateTag("messages");
   }
 
   return (

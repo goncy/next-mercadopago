@@ -46,8 +46,8 @@ import {redirect} from "next/navigation";
 
 import api from "@/api";
 
-// Queremos que esta página sea dinámica para saber el estado del marketplace
-export const dynamic = "force-dynamic";
+// Queremos que esta página sea estática, invalidamos el usuario y los mensajes cuando cambian
+export const ensureStatic = "navigation";
 
 export default async function MarketplacePage() {
   // Obtenemos el usuario y los mensajes
@@ -62,7 +62,9 @@ export default async function MarketplacePage() {
     "use server";
 
     const message = formData.get("text") as string;
-    const url = await api.message.submit(message);
+    // Obtenemos el usuario en el servidor para no exponer su access token en el formulario
+    const {marketplace} = await api.user.fetch();
+    const url = await api.message.submit(message, marketplace!);
 
     redirect(url);
   }
@@ -138,6 +140,7 @@ Vamos a continuar, aceptar y vamos a ser redirigidos a nuestra aplicación, dond
 Una vez que el usuario fue autorizado, es redirigido a nuestra aplicación hacia la ruta `/api/mercadopago/connect` junto con un parámetro `code` en la URL:
 
 ```ts
+import {revalidateTag} from "next/cache";
 import {NextRequest, NextResponse} from "next/server";
 
 import api from "@/api";
@@ -152,6 +155,9 @@ export async function GET(request: NextRequest) {
   // Actualizamos las credenciales del usuario
   await api.user.update({marketplace: credentials.access_token});
 
+  // Invalidamos el usuario para mostrar el formulario de mensajes
+  revalidateTag("user", {expire: 0});
+
   // Redirigimos al usuario a la página del marketplace
   return NextResponse.redirect(process.env.APP_URL!);
 }
@@ -159,7 +165,7 @@ export async function GET(request: NextRequest) {
 
 Vamos a extraer ese parametro y se lo pasamos a la función `connect` en `user` para obtener las credenciales del usuario, incluyendo un access token que nos permite crear preferencias de pago en nombre del creador de contenido.
 
-Luego actualizamos el usuario con el access token para poder accederlo desde nuestra aplicación y redirigimos al usuario nuevamente a la página de inicio.
+Luego actualizamos el usuario con el access token para poder accederlo desde nuestra aplicación, invalidamos el tag `user` (la página es estática y `api.user.fetch` usa `"use cache"` con ese tag) y redirigimos al usuario nuevamente a la página de inicio.
 
 > [!NOTE]
 > Las credenciales incluyen más información, como un refresh token, cuando vence y más. En una aplicación real deberíamos guardar ambos e intercambiar el refresh token por un nuevo access token cuando este expire. Pero esa tarea te la dejo a vos.

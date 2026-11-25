@@ -1,5 +1,5 @@
 import {Payment} from "mercadopago";
-import {revalidatePath} from "next/cache";
+import {revalidateTag} from "next/cache";
 
 import api, {mercadopago} from "@/api";
 
@@ -15,8 +15,8 @@ export async function POST(request: Request) {
     // Obtenemos los datos
     await api.message.add({id: payment.id!, text: payment.metadata.text});
 
-    // Revalidamos la página de inicio para mostrar los datos actualizados
-    revalidatePath("/");
+    // Invalidamos los mensajes para mostrar los datos actualizados
+    revalidateTag("messages", {expire: 0});
   }
 
   // Respondemos con un estado 200 para indicarle que la notificación fue recibida

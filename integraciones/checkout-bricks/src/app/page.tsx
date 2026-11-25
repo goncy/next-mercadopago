@@ -1,11 +1,11 @@
-import {revalidatePath} from "next/cache";
+import {updateTag} from "next/cache";
 
 import api from "@/api";
 
 import MessageForm from "./message-form";
 
-// Queremos que esta página sea dinámica para siempre poder ver la información actualizada del usuario
-export const dynamic = "force-dynamic";
+// Queremos que esta página sea estática, invalidamos los mensajes cuando agregamos uno nuevo
+export const ensureStatic = "navigation";
 
 export default async function HomePage() {
   // Obtenemos los mensajes de la base de datos
@@ -23,8 +23,8 @@ export default async function HomePage() {
     // Añadimos el mensaje a la lista
     await api.message.add({text: message, id: payment.id!});
 
-    // Revalidamos la ruta para poder ver el formulario de agregar mensaje
-    revalidatePath("/");
+    // Invalidamos los mensajes para ver el nuevo mensaje en la lista
+    updateTag("messages");
   }
 
   return (
