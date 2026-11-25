@@ -23,6 +23,14 @@ Dependiendo de cuales nescesites, una vez hayas ingresado a tu aplicación, vas 
 
 Por suerte muchas veces, dependiendo de que tipo de integración hayas elegido o en que tipo de cuenta estes, los links a las credenciales que no puedas usar van a estar deshabilitados o te va a indicar si tenes que crear una aplicación desde una cuenta de prueba.
 
+## Con el MCP de Mercado Pago
+
+En vez de copiarlas a mano, [configurá el MCP](../mcp/README.md) y copiá este prompt en tu agente. El agente las escribe directamente en tu `.env.local`:
+
+```text
+Usando el MCP de Mercado Pago, traé las credenciales de mi aplicación (si tengo más de una, preguntame cuál usar). Copiá .env.example a .env.local y completá MP_ACCESS_TOKEN, NEXT_PUBLIC_MP_PUBLIC_KEY, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET (solo las que estén en el archivo) con las credenciales de prueba. No me muestres las credenciales en el chat y no agregues el archivo a git.
+```
+
 ---
 
 [Volver al inicio](../../README.md)

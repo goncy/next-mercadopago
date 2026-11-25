@@ -6,6 +6,22 @@ Un caso de uso para esta implementación sería una plataforma como [Cafecito](h
 
 La implementación de esta funcionalidad es muy similar a la integracion con Checkout Pro, así que para poder seguir, primero completá todos los pasos de la [Integración de Mercado Pago con Checkout Pro](../checkout-pro/README.md).
 
+Las dos primeras secciones ([la cuenta de prueba extra](#crear-una-cuenta-de-prueba-extra-para-marketplace) y [la URL de redirección](#configurando-la-url-de-redirección)) las podés hacer de dos formas:
+
+- **A mano**: siguiendo los pasos de abajo.
+- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) y copiá este prompt en tu agente.
+
+```text
+Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
+1. Tomá APP_URL de ../checkout-pro/.env.local.
+2. Creá una aplicación de Checkout Pro llamada next-mercadopago-marketplace con la URL de redirección <APP_URL>/api/mercadopago/connect. Mostrame el resumen antes de crearla.
+3. Creá una cuenta de prueba vendedora llamada "Creador de contenido" y una compradora con 10000 de saldo. Mostrame el usuario y la contraseña de cada una.
+4. Copiá .env.example a .env.local y completá MP_ACCESS_TOKEN y NEXT_PUBLIC_MP_PUBLIC_KEY con las credenciales de prueba, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET con el Client ID y el Client Secret, y APP_URL con el mismo valor. No me muestres las credenciales y no agregues el archivo a git.
+5. Configurá el webhook en <APP_URL>/api/mercadopago para los eventos de Pagos.
+```
+
+Si usaste el MCP, salteá hasta [Revisando nuestra aplicación](#revisando-nuestra-aplicación).
+
 ## Índice
 
 1. [Crear una cuenta de prueba extra para Marketplace](#crear-una-cuenta-de-prueba-extra-para-marketplace)
