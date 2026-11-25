@@ -14,14 +14,14 @@ En cada paso que se puede hacer con el MCP vas a encontrar dos opciones: seguir 
 
 ## Las dos cuentas
 
-Cuando el MCP crea una aplicación en tu cuenta, Mercado Pago también crea una cuenta vendedora de prueba con su propia aplicación, y una cuenta compradora de prueba. Las credenciales de prueba que te da el MCP son las de la aplicación de la vendedora: los pagos de prueba los cobra ella, y Mercado Pago le manda las notificaciones al webhook de esa aplicación.
+Vas a configurar el MCP dos veces, con la misma URL y una cuenta distinta en cada una:
 
-El MCP solo puede modificar las aplicaciones de la cuenta con la que lo autorizaste. Por eso usamos dos servidores, con la misma URL y distinta cuenta:
+- `mercadopago-mcp-server`, con **tu cuenta principal**: crea las aplicaciones productivas, interactúa con tus cuentas de prueba (por ejemplo, para cargarle saldo a la compradora) y completa las credenciales de prueba en tu proyecto. Lo usan todas las integraciones.
+- `mercadopago-vendedor`, con **tu cuenta vendedora de prueba**: crea y configura las aplicaciones del entorno de prueba, como sus webhooks. Solo lo usan las integraciones que lo traen en su `.mcp.json`.
 
-- `mercadopago-mcp-server`, con tu cuenta principal: crea la aplicación, carga saldo a la compradora y completa las credenciales. Lo usan todas las integraciones.
-- `mercadopago-vendedor`, con la cuenta vendedora de prueba: configura el webhook en la aplicación de la vendedora. Solo lo usan las integraciones que lo traen en su `.mcp.json`.
+Cada MCP solo puede modificar las aplicaciones de la cuenta con la que lo autorizaste. Las credenciales de prueba de tu proyecto son de una aplicación de la vendedora, así que todo lo que se configura en esa aplicación pasa por `mercadopago-vendedor`.
 
-La compradora no necesita un MCP: solo la usás para pagar en el navegador.
+La cuenta compradora no necesita un MCP: solo la usás para pagar en el navegador.
 
 ## Agregar los servidores
 
