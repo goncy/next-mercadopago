@@ -42,6 +42,8 @@ const api = {
           },
           // Marcamos el pago como mensaje para poder buscarlo después
           external_reference: "message",
+          // Le pedimos a Mercado Pago que nos notifique los cambios del pago en nuestro webhook
+          notification_url: `${process.env.APP_URL}/api/mercadopago`,
         },
       });
 

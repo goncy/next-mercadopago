@@ -12,8 +12,10 @@ Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
 1. Creá una aplicación de Checkout Pro llamada next-mercadopago-checkout-pro. Mostrame el resumen antes de crearla.
 2. Creá una cuenta de prueba compradora con 10000 de saldo y mostrame su usuario y contraseña.
 3. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de prueba y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
-4. Configurá el webhook en <URL pública>/api/mercadopago para los eventos de Pagos.
 ```
+
+> [!NOTE]
+> No hace falta configurar un webhook: cada preferencia le pasa `APP_URL` a Mercado Pago como `notification_url`. Con el MCP, el token de prueba es de una cuenta de vendedor que crea Mercado Pago, y el MCP no puede configurar webhooks en esa cuenta.
 
 ## Video
 
@@ -101,6 +103,8 @@ const api = {
           },
           // Marcamos el pago como mensaje para poder buscarlo después
           external_reference: "message",
+          // Le pedimos a Mercado Pago que nos notifique los cambios del pago en nuestro webhook
+          notification_url: `${process.env.APP_URL}/api/mercadopago`,
         },
       });
 
@@ -112,6 +116,8 @@ const api = {
 ```
 
 Podemos pensar a la preferencia de pago como un objeto que representa una orden de compra. algo que un usuario quiere comprar.
+
+Con `notification_url` cada preferencia le dice a Mercado Pago a dónde notificar sus pagos, usando la URL pública que guardamos en `APP_URL`. Así las notificaciones llegan aunque las credenciales sean de una cuenta de prueba que no configuramos nosotros.
 
 Hay varias propiedades más que podemos agregar a la preferencia de pago, como la URL a la cual se va a redirigir al usuario luego de pagar. Una descripción más extensa del producto, etc. Podés ver más [acá](https://www.mercadopago.com.ar/developers/es/reference/preferences/_checkout_preferences/post).
 
@@ -127,7 +133,12 @@ import {mercadopago} from "@/api";
 
 export async function POST(request: Request) {
   // Obtenemos el cuerpo de la petición que incluye información sobre la notificación
-  const body: {data: {id: string}} = await request.json();
+  const body: {data?: {id: string}; type?: string} = await request.json();
+
+  // Solo nos interesan las notificaciones de pagos, ignoramos el resto (como las de `merchant_order`)
+  if (body.type !== "payment" || !body.data?.id) {
+    return new Response(null, {status: 200});
+  }
 
   // Obtenemos el pago
   const payment = await new Payment(mercadopago).get({id: body.data.id});
