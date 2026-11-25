@@ -25,6 +25,12 @@ Podemos instalar [Cloudflared Tunnel](https://developers.cloudflare.com/cloudfla
 cloudflared tunnel --url http://localhost:3000
 ```
 
+Si la integración corre con HTTPS (como `Checkout Bricks` o `Checkout API`), usá:
+
+```bash
+cloudflared tunnel --url https://localhost:3000 --no-tls-verify
+```
+
 > [!NOTE]
 > Asegurate de cerrar y abrir la terminal en caso de que no te reconozca el comando.
 
@@ -40,6 +46,9 @@ Yo estoy usando VSCode, por ende voy a usar `Dev Tunnels` para exponer el puerto
 ## Probando el link
 
 Si corremos nuestra aplicación con `npm run dev` (habiendo hecho `npm install` previamente) y luego entramos a la URL que obtuvimos, deberíamos ver nuestra aplicación corriendo. Para asegurarte de que es pública, intentá de acceder con tu celular sin conectarte a la misma red wifi.
+
+> [!NOTE]
+> Next.js bloquea los recursos de desarrollo cuando entrás desde otro dominio, y sin ellos la página no carga su JavaScript. Las integraciones ya permiten los dominios de Cloudflare Tunnel y VSCode Dev Tunnels en `allowedDevOrigins` (`next.config.mjs`). Si usás otra herramienta, agregá su dominio ahí y reiniciá `npm run dev`.
 
 ---
 

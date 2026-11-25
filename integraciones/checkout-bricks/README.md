@@ -5,11 +5,11 @@ En este documento vamos a aprender a agregar pagos a nuestra aplicación utiliza
 Podés preparar todo de dos formas:
 
 - **A mano**: asegurate de haber [clonado el proyecto](../../configuracion/clonar-aplicacion/README.md), [creado una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md) y copiado las [`credenciales de prueba`](../../configuracion/credenciales/README.md) a tu archivo `.env.example` y renombrarlo a `.env.local`.
-- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md).
+- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) con tu cuenta principal y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md). En el prompt, reemplazá `<tu usuario>` por tu usuario: los nombres de las aplicaciones no se pueden repetir.
 
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
-1. Creá una aplicación de Checkout Bricks llamada next-mercadopago-checkout-bricks. Mostrame el resumen antes de crearla.
+1. Creá una aplicación de Checkout Bricks llamada <tu usuario>-next-mercadopago-checkout-bricks. Mostrame el resumen antes de crearla.
 2. Copiá .env.example a .env.local y completá MP_ACCESS_TOKEN y NEXT_PUBLIC_MP_PUBLIC_KEY con las credenciales de prueba. No me muestres las credenciales y no agregues el archivo a git.
 3. Mostrame las tarjetas de prueba de mi país y qué nombre de titular usar para un pago aprobado y uno rechazado.
 ```
