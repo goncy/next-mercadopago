@@ -35,11 +35,14 @@ export default async function MarketplacePage() {
         // Si no autorizó la integración, mostramos un botón para redirigirlo a Mercado Pago a autorizar
         <a href={authorizationUrl}>Conectar Mercado Pago</a>
       )}
-      <ul>
-        {messages.map((message) => (
-          <li key={message.id}>{message.text}</li>
-        ))}
-      </ul>
+      <section className="grid gap-3">
+        <h2>Mensajes</h2>
+        <ul>
+          {messages.map((message) => (
+            <li key={message.id}>{message.text}</li>
+          ))}
+        </ul>
+      </section>
     </section>
   );
 }

@@ -19,8 +19,12 @@
     }
 
     button {
-      @apply h-9 justify-self-end rounded-md bg-white px-4 text-sm font-medium text-black hover:bg-neutral-200 cursor-pointer;
+      @apply h-10 justify-self-end rounded-md bg-white px-4 text-sm font-medium text-black hover:bg-neutral-200 cursor-pointer;
     }
+  }
+
+  h2 {
+    @apply text-sm font-medium text-neutral-400;
   }
 
   ul {

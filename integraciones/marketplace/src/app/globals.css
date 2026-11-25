@@ -20,7 +20,11 @@
   }
 
   button, a[href*="mercadopago"] {
-    @apply flex h-9 items-center justify-self-center rounded-md bg-white px-4 text-sm font-medium text-black hover:bg-neutral-200 cursor-pointer;
+    @apply flex h-10 items-center justify-self-center rounded-md bg-white px-4 text-sm font-medium text-black hover:bg-neutral-200 cursor-pointer;
+  }
+
+  h2 {
+    @apply text-sm font-medium text-neutral-400;
   }
 
   ul {
