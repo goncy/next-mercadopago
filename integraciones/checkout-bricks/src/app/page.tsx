@@ -8,7 +8,7 @@ import MessageForm from "./message-form";
 export const ensureStatic = "navigation";
 
 export default async function HomePage() {
-  // Obtenemos los mensajes de la base de datos
+  // Obtenemos los mensajes
   const messages = await api.message.list();
 
   async function add(
@@ -17,11 +17,8 @@ export default async function HomePage() {
   ) {
     "use server";
 
-    // Creamos el pago con los datos del brick
-    const payment = await api.message.buy(data);
-
-    // Añadimos el mensaje a la lista
-    await api.message.add({text: message, id: payment.id!});
+    // Creamos el pago con el mensaje y los datos del brick
+    await api.message.buy(message, data);
 
     // Invalidamos los mensajes para ver el nuevo mensaje en la lista
     updateTag("messages");

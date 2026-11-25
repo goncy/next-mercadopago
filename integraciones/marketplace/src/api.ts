@@ -1,7 +1,7 @@
-import {readFileSync, writeFileSync} from "node:fs";
-
-import {MercadoPagoConfig, Preference, OAuth} from "mercadopago";
+import {MercadoPagoConfig, OAuth, Payment, Preference} from "mercadopago";
 import {cacheLife, cacheTag} from "next/cache";
+
+import {read, write} from "@/db";
 
 interface Message {
   id: number;
@@ -14,6 +14,8 @@ interface User {
   marketplace: string | null;
 }
 
+const INITIAL_USER: User = {id: 1, name: "Goncy", marketplace: null};
+
 export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TOKEN!});
 
 const api = {
@@ -25,11 +27,8 @@ const api = {
       cacheLife("max");
       cacheTag("user");
 
-      // Leemos el archivo de la base de datos del usuario
-      const db = readFileSync("db/user.db");
-
-      // Devolvemos los datos como un objeto
-      return JSON.parse(db.toString());
+      // Leemos el usuario guardado
+      return read("user", INITIAL_USER);
     },
     async update(data: Partial<User>): Promise<void> {
       // Obtenemos los datos del usuario
@@ -39,7 +38,7 @@ const api = {
       const draft = {...db, ...data};
 
       // Guardamos los datos
-      writeFileSync("db/user.db", JSON.stringify(draft, null, 2));
+      write("user", draft);
     },
     async authorize() {
       // Obtenemos la url de autorización
@@ -76,26 +75,25 @@ const api = {
       cacheLife("max");
       cacheTag("messages");
 
-      // Leemos el archivo de la base de datos de los mensajes
-      const db = readFileSync("db/message.db");
+      // Si el vendedor todavía no conectó su cuenta, no hay mensajes
+      const {marketplace} = await api.user.fetch();
 
-      // Devolvemos los datos como un array de objetos
-      return JSON.parse(db.toString());
-    },
-    async add(message: Message): Promise<void> {
-      // Obtenemos los mensajes
-      const db = await api.message.list();
+      if (!marketplace) return [];
 
-      // Si ya existe un mensaje con ese id, lanzamos un error
-      if (db.some((_message) => _message.id === message.id)) {
-        throw new Error("Message already added");
-      }
+      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado en la cuenta del vendedor con el texto en su `metadata`
+      const {results = []} = await new Payment(
+        new MercadoPagoConfig({accessToken: marketplace}),
+      ).search({
+        options: {
+          external_reference: "message",
+          status: "approved",
+          sort: "date_created",
+          criteria: "asc",
+        },
+      });
 
-      // Agregamos el nuevo mensaje
-      const draft = db.concat(message);
-
-      // Guardamos los datos
-      writeFileSync("db/message.db", JSON.stringify(draft, null, 2));
+      // Devolvemos los pagos como mensajes
+      return results.map((payment) => ({id: Number(payment.id), text: payment.metadata.text}));
     },
     async submit(text: Message["text"], marketplace: string) {
       // Creamos el cliente de Mercado Pago usando el access token del Marketplace
@@ -115,6 +113,8 @@ const api = {
           metadata: {
             text,
           },
+          // Marcamos el pago como mensaje para poder buscarlo después
+          external_reference: "message",
           // Le agregamos ARS 5 de comisión
           marketplace_fee: 5,
         },

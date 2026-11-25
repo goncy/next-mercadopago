@@ -1,5 +1,3 @@
-import {readFileSync, writeFileSync} from "node:fs";
-
 import {MercadoPagoConfig, Payment} from "mercadopago";
 import {cacheLife, cacheTag} from "next/cache";
 
@@ -19,23 +17,23 @@ const api = {
       cacheLife("max");
       cacheTag("messages");
 
-      // Leemos el archivo de la base de datos de los mensajes
-      const db = readFileSync("db/message.db");
+      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`
+      const {results = []} = await new Payment(mercadopago).search({
+        options: {
+          external_reference: "message",
+          status: "approved",
+          sort: "date_created",
+          criteria: "asc",
+        },
+      });
 
-      // Devolvemos los datos como un array de objetos
-      return JSON.parse(db.toString());
+      // Devolvemos los pagos como mensajes
+      return results.map((payment) => ({id: Number(payment.id), text: payment.metadata.text}));
     },
-    async add(message: Message): Promise<void> {
-      // Obtenemos los mensajes
-      const db = await api.message.list();
-
-      // Agregamos el nuevo mensaje
-      const draft = db.concat(message);
-
-      // Guardamos los datos
-      writeFileSync("db/message.db", JSON.stringify(draft, null, 2));
-    },
-    async buy(data: {amount: number; email: string; installments: number; token: string}) {
+    async buy(
+      text: Message["text"],
+      data: {amount: number; email: string; installments: number; token: string},
+    ) {
       // Creamos el pago con los datos del brick
       const payment = await new Payment(mercadopago).create({
         body: {
@@ -45,6 +43,9 @@ const api = {
           token: data.token,
           transaction_amount: data.amount,
           installments: data.installments,
+          // Guardamos el texto en la metadata y marcamos el pago como mensaje para poder buscarlo después
+          metadata: {text},
+          external_reference: "message",
         },
       });
 

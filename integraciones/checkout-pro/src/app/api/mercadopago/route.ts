@@ -1,7 +1,7 @@
 import {Payment} from "mercadopago";
 import {revalidateTag} from "next/cache";
 
-import api, {mercadopago} from "@/api";
+import {mercadopago} from "@/api";
 
 export async function POST(request: Request) {
   // Obtenemos el cuerpo de la petición que incluye información sobre la notificación
@@ -10,12 +10,8 @@ export async function POST(request: Request) {
   // Obtenemos el pago
   const payment = await new Payment(mercadopago).get({id: body.data.id});
 
-  // Si se aprueba, agregamos el mensaje
+  // Si se aprueba, invalidamos los mensajes para mostrar el nuevo pago
   if (payment.status === "approved") {
-    // Obtenemos los datos
-    await api.message.add({id: payment.id!, text: payment.metadata.text});
-
-    // Invalidamos los mensajes para mostrar los datos actualizados
     revalidateTag("messages", {expire: 0});
   }
 

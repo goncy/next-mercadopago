@@ -1,7 +1,7 @@
-import fs from "node:fs";
-
 import {MercadoPagoConfig, PreApproval} from "mercadopago";
 import {cacheLife, cacheTag} from "next/cache";
+
+import {read, write} from "@/db";
 
 interface Message {
   id: number;
@@ -14,6 +14,11 @@ interface User {
   suscription: string | null;
   email: string;
 }
+
+const INITIAL_MESSAGES: Message[] = [
+  {id: 1, text: "Espero ya te hayas suscrito a mi canal de YouTube"},
+];
+const INITIAL_USER: User = {id: 1, name: "Goncy", suscription: null, email: ""};
 
 export const mercadopago = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
@@ -45,14 +50,12 @@ const api = {
       cacheLife("max");
       cacheTag("user");
 
-      const user = fs.readFileSync("db/user.db", "utf-8");
-
-      return JSON.parse(user);
+      return read("user", INITIAL_USER);
     },
     async update(data: Partial<User>) {
       const user = await api.user.fetch();
 
-      fs.writeFileSync("db/user.db", JSON.stringify({...user, ...data}));
+      write("user", {...user, ...data});
     },
   },
   message: {
@@ -64,7 +67,7 @@ const api = {
         text: message,
       });
 
-      fs.writeFileSync("db/message.db", JSON.stringify(messages));
+      write("message", messages);
     },
     async list(): Promise<Message[]> {
       "use cache";
@@ -72,9 +75,7 @@ const api = {
       cacheLife("max");
       cacheTag("messages");
 
-      const messages = fs.readFileSync("db/message.db", "utf-8");
-
-      return JSON.parse(messages);
+      return read("message", INITIAL_MESSAGES);
     },
   },
 };
