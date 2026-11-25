@@ -14,7 +14,7 @@ Antes de continuar, asegurate de haber [clonado el proyecto](../../configuracion
 
 ## Revisando nuestra aplicación
 
-En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) se renderiza un formulario llamado `MessageForm` que incluye un campo para escribir el mensaje y un formulario con campos de número de tarjeta, fecha de vencimiento y código de seguridad para realizar el pago. Adicionalmente se pide nombre e email los cuales son usados para generar un token de pago para luego efectivizar el pago. Al hacer submit de este formulario, se ejecuta un Server Action que recibe el mensaje y la información del pago y agrega el mensaje a la lista:
+En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) se renderiza un formulario llamado `MessageForm` que incluye un campo para escribir el mensaje y un formulario con campos de número de tarjeta, fecha de vencimiento y código de seguridad para realizar el pago. Adicionalmente se pide nombre e email los cuales son usados para generar un token de pago para luego efectivizar el pago. Al hacer submit de este formulario, se ejecuta un Server Action que recibe el mensaje y la información del pago y crea el pago con el mensaje en su `metadata`:
 
 ```tsx
 import {updateTag} from "next/cache";
@@ -27,7 +27,7 @@ import api from "@/api";
 export const ensureStatic = "navigation";
 
 export default async function HomePage() {
-  // Obtenemos los mensajes de la base de datos
+  // Obtenemos los mensajes
   const messages = await api.message.list();
 
   async function add(
@@ -36,11 +36,8 @@ export default async function HomePage() {
   ) {
     "use server";
 
-    // Creamos el pago con los datos del formulario
-    const payment = await api.message.buy(data);
-
-    // Añadimos el mensaje a la lista
-    await api.message.add({text: message, id: payment.id!});
+    // Creamos el pago con el mensaje y los datos del formulario
+    await api.message.buy(message, data);
 
     // Invalidamos los mensajes para ver el nuevo mensaje en la lista
     updateTag("messages");
@@ -62,7 +59,7 @@ export default async function HomePage() {
 ```
 
 > [!NOTE]
-> La página es estática (`ensureStatic = "navigation"` hace que el build falle si algo la vuelve dinámica). `api.message.list` usa `"use cache"` con el tag `messages`, así que cuando agregamos un mensaje invalidamos ese tag con `updateTag` y la lista se actualiza al instante.
+> La página es estática (`ensureStatic = "navigation"` hace que el build falle si algo la vuelve dinámica). `api.message.list` usa `"use cache"` con el tag `messages`, así que cuando creamos un pago invalidamos ese tag con `updateTag` y la lista se actualiza al instante.
 
 ## Crear el formulario de pago
 
@@ -131,9 +128,12 @@ Dentro de `/src/api.ts`, la función `buy` en `message` se encarga de tomar los 
 ```ts
 const api = {
   message: {
-    async buy(data: {amount: number; email: string; installments: number; token: string}) {
+    async buy(
+      text: Message["text"],
+      data: {amount: number; email: string; installments: number; token: string},
+    ) {
       // Creamos el pago con los datos del formulario
-      const payment = await new Payment(mercadopago).create({
+      await new Payment(mercadopago).create({
         body: {
           payer: {
             email: data.email,
@@ -141,11 +141,11 @@ const api = {
           token: data.token,
           transaction_amount: data.amount,
           installments: data.installments,
+          // Guardamos el texto en la metadata y marcamos el pago como mensaje para poder buscarlo después
+          metadata: {text},
+          external_reference: "message",
         },
       });
-
-      // Devolvemos el pago
-      return payment;
     },
   },
 };
@@ -153,6 +153,32 @@ const api = {
 
 > [!NOTE]
 > Cuando el usuario hizo submit del formulario, en realidad no pagó, sino que generamos un token de pago para posteriormente (una vez que validemos los datos desde el servidor) podamos efectivizar el pago como hacemos ahora.
+
+## Listar los mensajes
+
+No tenemos una base de datos: Mercado Pago ya guarda cada pago con el texto en su `metadata`. Dentro de `/src/api.ts`, la función `list` en `message` busca los pagos aprobados marcados como mensaje y los devuelve como mensajes:
+
+```ts
+const api = {
+  message: {
+    async list(): Promise<Message[]> {
+      // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
+      "use cache";
+
+      cacheLife("max");
+      cacheTag("messages");
+
+      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`
+      const {results = []} = await new Payment(mercadopago).search({
+        options: {external_reference: "message", status: "approved"},
+      });
+
+      // Devolvemos los pagos como mensajes
+      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
+    },
+  },
+};
+```
 
 ## Probar la integración
 

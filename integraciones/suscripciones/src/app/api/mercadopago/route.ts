@@ -1,7 +1,4 @@
-import {PreApproval} from "mercadopago";
 import {revalidateTag} from "next/cache";
-
-import api, {mercadopago} from "@/api";
 
 export async function POST(request: Request) {
   // Obtenemos el cuerpo de la petición que incluye el tipo de notificación
@@ -9,17 +6,8 @@ export async function POST(request: Request) {
 
   // Solo nos interesan las notificaciones de suscripciones
   if (body.type === "subscription_preapproval") {
-    // Obtenemos la suscripción
-    const preapproval = await new PreApproval(mercadopago).get({id: body.data.id});
-
-    // Si se aprueba, actualizamos el usuario con el id de la suscripción
-    if (preapproval.status === "authorized") {
-      // Actualizamos el usuario con el id de la suscripción
-      await api.user.update({suscription: preapproval.id});
-
-      // Invalidamos el usuario para mostrar el formulario de mensajes
-      revalidateTag("user", {expire: 0});
-    }
+    // Invalidamos el estado de la suscripción para mostrar el contenido actualizado
+    revalidateTag(`suscription-${body.data.id}`, {expire: 0});
   }
 
   // Respondemos con un estado 200 para indicarle que la notificación fue recibida

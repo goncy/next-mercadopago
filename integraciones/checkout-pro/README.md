@@ -14,7 +14,8 @@ Antes de continuar, asegurate de haber [clonado el proyecto](../../configuracion
 2. [Crear una preferencia de pago](#crear-una-preferencia-de-pago)
 3. [Recibir notificaciones de pagos](#recibir-notificaciones-de-pagos)
 4. [Verificar la autenticidad del pago](#verificar-la-autenticidad-del-pago)
-5. [Probar la integración](#probar-la-integración)
+5. [Listar los mensajes](#listar-los-mensajes)
+6. [Probar la integración](#probar-la-integración)
 
 ## Revisando nuestra aplicación
 
@@ -72,7 +73,7 @@ Dentro de `/src/api.ts`, la función `submit` en `message` se encarga de crear u
 ```ts
 const api = {
   message: {
-    async submit(text: string): Promise<string> {
+    async submit(text: Message["text"]) {
       // Creamos la preferencia incluyendo el precio, titulo y metadata. La información de `items` es standard de Mercado Pago. La información que nosotros necesitamos para nuestra DB debería vivir en `metadata`.
       const preference = await new Preference(mercadopago).create({
         body: {
@@ -87,6 +88,8 @@ const api = {
           metadata: {
             text,
           },
+          // Marcamos el pago como mensaje para poder buscarlo después
+          external_reference: "message",
         },
       });
 
@@ -109,7 +112,7 @@ Tenemos un Route Handler (`src/app/api/mercadopago/route.ts`) definido en nuestr
 import {Payment} from "mercadopago";
 import {revalidateTag} from "next/cache";
 
-import api, {mercadopago} from "@/api";
+import {mercadopago} from "@/api";
 
 export async function POST(request: Request) {
   // Obtenemos el cuerpo de la petición que incluye información sobre la notificación
@@ -118,12 +121,8 @@ export async function POST(request: Request) {
   // Obtenemos el pago
   const payment = await new Payment(mercadopago).get({id: body.data.id});
 
-  // Si se aprueba, agregamos el mensaje
+  // Si se aprueba, invalidamos los mensajes para mostrar el nuevo pago
   if (payment.status === "approved") {
-    // Obtenemos los datos
-    await api.message.add({id: payment.id!, text: payment.metadata.text});
-
-    // Invalidamos los mensajes para mostrar los datos actualizados
     revalidateTag("messages", {expire: 0});
   }
 
@@ -137,19 +136,40 @@ export async function POST(request: Request) {
 
 ## Verificar la autenticidad del pago
 
-Este Route Handler va a recibir las notificaciones de pago de Mercado Pago, va a obtener el pago usando el ID que nos llega en la notificación. En caso de que el pago sea aprobado, va a agregar el mensaje a nuestra lista de mensajes y va a invalidar el tag `messages` para que se muestren los mensajes actualizados.
+Este Route Handler va a recibir las notificaciones de pago de Mercado Pago, va a obtener el pago usando el ID que nos llega en la notificación. En caso de que el pago sea aprobado, va a invalidar el tag `messages` para que se muestren los mensajes actualizados.
 
 > [!NOTE]
 > La página es estática (`ensureStatic = "navigation"` hace que el build falle si algo la vuelve dinámica). `api.message.list` usa `"use cache"` con el tag `messages`. Como la notificación llega a un Route Handler usamos `revalidateTag` con `{expire: 0}` para que la próxima visita ya vea el mensaje nuevo.
 
-De esta manera nos aseguramos de que el pago exista y haya sido aprobado. También nuestro método `api.message.add` se encarga de validar que no exista un mensaje con el mismo ID, para que no se dupliquen.
+De esta manera nos aseguramos de que el pago exista y haya sido aprobado.
+
+## Listar los mensajes
+
+No tenemos una base de datos: Mercado Pago ya guarda cada pago con el texto en su `metadata`. Dentro de `/src/api.ts`, la función `list` en `message` busca los pagos aprobados marcados como mensaje (por eso usamos `external_reference: "message"` en la preferencia) y los devuelve como mensajes:
 
 ```ts
-// Si ya existe un mensaje con ese id, lanzamos un error
-if (db.some((_message) => _message.id === message.id)) {
-  throw new Error("Message already added");
-}
+const api = {
+  message: {
+    async list(): Promise<Message[]> {
+      // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
+      "use cache";
+
+      cacheLife("max");
+      cacheTag("messages");
+
+      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`
+      const {results = []} = await new Payment(mercadopago).search({
+        options: {external_reference: "message", status: "approved"},
+      });
+
+      // Devolvemos los pagos como mensajes
+      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
+    },
+  },
+};
 ```
+
+Como cada mensaje es un pago, tampoco se pueden duplicar: aunque Mercado Pago nos notifique varias veces el mismo pago, la búsqueda lo devuelve una sola vez.
 
 En una aplicación real deberíamos verificar la concordancia de la clave secreta, devolver errores más descriptivos y más, pero por simplicidad y tiempo te voy a dejar esa tarea a vos, podés ver más [acá](https://www.mercadopago.com.ar/developers/es/docs/your-integrations/notifications/webhooks#configuracinatravsdetusintegraciones).
 
@@ -159,7 +179,7 @@ Ahora vamos a intentar de hacer el flujo completo de agregar un mensaje a nuestr
 
 ![image](./screenshots/pago-aprobado.jpg)
 
-Excelente, nuestro pago fue aprobado, la notificación fue recibida y nuestro mensaje fue agregado a la lista ✨.
+Excelente, nuestro pago fue aprobado, la notificación fue recibida y nuestro mensaje aparece en la lista ✨.
 
 ---
 

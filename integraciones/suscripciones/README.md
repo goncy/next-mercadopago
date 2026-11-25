@@ -1,6 +1,6 @@
 # Integración de Mercado Pago con Suscripciones
 
-En este documento vamos a aprender a agregar suscripciones a nuestra aplicación utilizando [Suscripciones sin plan asociado con pago pendiente](https://www.mercadopago.com.ar/developers/es/docs/subscriptions/integration-configuration/subscription-no-associated-plan/pending-payments). Los usuarios van a poder agregar mensajes a una lista de mensajes siempre y cuando estén suscritos.
+En este documento vamos a aprender a agregar suscripciones a nuestra aplicación utilizando [Suscripciones sin plan asociado con pago pendiente](https://www.mercadopago.com.ar/developers/es/docs/subscriptions/integration-configuration/subscription-no-associated-plan/pending-payments). Los usuarios van a poder ver contenido exclusivo siempre y cuando estén suscritos.
 
 Antes de continuar, asegurate de haber [clonado el proyecto](../../configuracion/clonar-aplicacion/README.md), [creado una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md) (para producción), haber creado dos [cuentas de prueba](../../configuracion/cuentas-de-prueba/README.md) para Comprador y Vendedor, haber iniciado sesión en otro navegador con la cuenta de prueba de Vendedor y [crear una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md) (para desarrollo), haber [copiado las credenciales](../../configuracion/credenciales/README.md) de producción de la aplicación del Vendedor a tu archivo `.env.example` y renombrarlo a `.env.local`, haber [expuesto el puerto 3000 al exterior](../../configuracion/exponer-puerto/README.md) y haber [configurado un webhook](../../configuracion/webhook/README.md) para escuchar eventos de `Planes y Suscripciones`.
 
@@ -8,108 +8,73 @@ Antes de continuar, asegurate de haber [clonado el proyecto](../../configuracion
 
 1. [Revisando nuestra aplicación](#revisando-nuestra-aplicación)
 2. [Crear una suscripción](#crear-una-suscripción)
-3. [Recibir notificaciones](#recibir-notificaciones)
-4. [Actualizar el estado de la suscripción](#actualizar-el-estado-de-la-suscripción)
-5. [Probar la integración](#probar-la-integración)
+3. [Consultar el estado de la suscripción](#consultar-el-estado-de-la-suscripción)
+4. [Recibir notificaciones](#recibir-notificaciones)
+5. [Actualizar el estado de la suscripción](#actualizar-el-estado-de-la-suscripción)
+6. [Probar la integración](#probar-la-integración)
 
 ## Revisando nuestra aplicación
 
 En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) se renderizan cosas diferentes dependiendo de si el usuario tiene o no una suscripción activa:
 - Si no tiene una suscripción activa: Se renderiza un formulario para suscribirse, que al hacer submit, se redirecciona al usuario a Mercado Pago para que pueda pagar.
-- Si el usuario tiene una suscripción activa: Se renderiza un formulario para agregar un mensaje a nuestra lista de mensajes.
-
-Independientemente de si el usuario tiene o no una suscripción activa, se renderiza una lista de mensajes.
+- Si el usuario tiene una suscripción activa: Se renderiza el contenido exclusivo para suscriptores.
 
 ```tsx
 import {redirect} from "next/navigation";
-import {updateTag} from "next/cache";
 
 import api from "@/api";
 
-// Queremos que esta página sea estática, invalidamos el usuario y los mensajes cuando cambian
-export const ensureStatic = "navigation";
-
 export default async function SuscripcionesPage() {
-  // Obtenemos los mensajes y el usuario
-  const messages = await api.message.list();
-  // Obtenemos el usuario
-  const user = await api.user.fetch();
+  // Verificamos si el usuario tiene una suscripción activa
+  const active = await api.suscription.active();
+
+  // Si está suscrito, mostramos el contenido exclusivo
+  if (active) {
+    return (
+      <article className="grid gap-3">
+        <h2>Contenido exclusivo</h2>
+        <p>Gracias por suscribirte. Este contenido solo lo pueden ver los suscriptores.</p>
+      </article>
+    );
+  }
 
   async function suscribe(formData: FormData) {
     "use server";
 
-    // Obtenemos el email del usuario
     const email = formData.get("email");
+    const url = await api.suscription.create(email as string);
 
-    // Suscribimos al usuario
-    const url = await api.user.suscribe(user.id, email as string);
-
-    // Redireccionamos al usuario a Mercado Pago para que pueda pagar
     redirect(url);
   }
 
-  async function add(formData: FormData) {
-    "use server";
-
-    // Obtenemos el mensaje del usuario
-    const message = formData.get("message");
-
-    // Agregamos el mensaje a nuestra lista
-    await api.message.add(message as string);
-
-    // Invalidamos los mensajes para que se muestren actualizados
-    updateTag("messages");
-  }
-
+  // Si no está suscrito, mostramos el formulario para suscribirse
   return (
-    <div className="grid gap-12">
-      {user.suscription ? (
-        <form action={add}>
-          <textarea name="message" rows={4} />
-          <button type="submit">
-            Submit
-          </button>
-        </form>
-      ) : (
-        <form action={suscribe}>
-          <input
-            defaultValue={user.email}
-            name="email"
-            placeholder="goncy@goncy.com"
-            type="email"
-          />
-          <button type="submit">
-            Suscribirse
-          </button>
-        </form>
-      )}
-      <ul>
-        {messages.map((message) => (
-          <li key={message.id}>
-            <p>{message.text}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <form action={suscribe} className="sm:grid-cols-[1fr_auto]">
+      <input name="email" placeholder="goncy@goncy.com" type="email" />
+      <button className="justify-self-stretch" type="submit">
+        Suscribirse
+      </button>
+    </form>
   );
 }
 ```
 
 > [!NOTE]
-> En esta aplicación de ejemplo siempre vamos a tener un usuario (que se guarda en `tmp/user.json`, ver `src/db.ts`), lo único que vamos a hacer es interactuar con la propiedad `suscription` del usuario. En una aplicación real vas a manejar la lógica de autenticación normalmente.
+> En esta aplicación de ejemplo no tenemos usuarios ni base de datos: guardamos el ID de la suscripción en una cookie y le preguntamos a Mercado Pago su estado. Como leemos una cookie, la página se renderiza en cada request. El archivo `loading.tsx` la envuelve en un `<Suspense>` y muestra "Cargando..." mientras tanto, y el resto (el layout y ese fallback) sigue siendo estático. En una aplicación real vas a asociar la suscripción a tu usuario y manejar la lógica de autenticación normalmente.
 
 ## Crear una suscripción
 
-Dentro de `/src/api.ts`, la función `suscribe` en `user` se encarga de crear una suscripción sin plan asociado (con pago pendiente) y devolver el init point (url de pago):
+Dentro de `/src/api.ts`, la función `create` en `suscription` se encarga de crear una suscripción sin plan asociado (con pago pendiente), guardar su ID en una cookie y devolver el init point (url de pago):
 
 ```ts
 const api = {
-  user: {
-    async suscribe(email: string) {
+  suscription: {
+    async create(email: string) {
+      // Creamos una suscripción sin plan asociado y con pago pendiente
       const suscription = await new PreApproval(mercadopago).create({
         body: {
           back_url: process.env.APP_URL!,
-          reason: "Suscripción a mensajes de muro",
+          reason: "Suscripción a contenido exclusivo",
           auto_recurring: {
             frequency: 1,
             frequency_type: "months",
@@ -121,10 +86,16 @@ const api = {
         },
       });
 
+      // Guardamos el id de la suscripción en una cookie para saber de quién es
+      const cookieStore = await cookies();
+
+      cookieStore.set("suscription", suscription.id!, {httpOnly: true});
+
+      // Devolvemos el init point (url de pago) para que el usuario pueda pagar
       return suscription.init_point!;
     },
-  }
-}
+  },
+};
 ```
 
 Las suscripciones de pago pueden ser de 2 tipos:
@@ -133,15 +104,48 @@ Las suscripciones de pago pueden ser de 2 tipos:
 
 Como te habrás dado cuenta, arriba estamos creando una suscripción sin plan asociado y de pago pendiente (status `pending`) y luego devolvemos el `init_point` y usamos esa URL para redirigir al usuario a Mercado Pago.
 
+## Consultar el estado de la suscripción
+
+Para saber si el usuario está suscrito, leemos el ID de la cookie y le preguntamos a Mercado Pago el estado de la suscripción. Cacheamos ese estado con un tag por suscripción, así no le preguntamos a Mercado Pago en cada visita:
+
+```ts
+const api = {
+  suscription: {
+    async active() {
+      // Leemos el id de la suscripción de la cookie
+      const cookieStore = await cookies();
+      const id = cookieStore.get("suscription")?.value;
+
+      // Si no hay suscripción, no está activa
+      if (!id) return false;
+
+      // Mercado Pago es nuestra base de datos: le preguntamos el estado de la suscripción
+      const status = await api.suscription.status(id);
+
+      return status === "authorized";
+    },
+    async status(id: string) {
+      // Cacheamos el estado hasta que el webhook nos avise que cambió
+      "use cache";
+
+      cacheLife("max");
+      cacheTag(`suscription-${id}`);
+
+      // Obtenemos la suscripción y devolvemos su estado
+      const suscription = await new PreApproval(mercadopago).get({id});
+
+      return suscription.status;
+    },
+  },
+};
+```
+
 ## Recibir notificaciones
 
 Tenemos un Route Handler (`src/app/api/mercadopago/route.ts`) definido en nuestra aplicación que se encarga de recibir las notificaciones de Mercado Pago.
 
 ```ts
-import {PreApproval} from "mercadopago";
 import {revalidateTag} from "next/cache";
-
-import api, {mercadopago} from "@/api";
 
 export async function POST(request: Request) {
   // Obtenemos el cuerpo de la petición que incluye el tipo de notificación
@@ -149,17 +153,8 @@ export async function POST(request: Request) {
 
   // Solo nos interesan las notificaciones de suscripciones
   if (body.type === "subscription_preapproval") {
-    // Obtenemos la suscripción
-    const preapproval = await new PreApproval(mercadopago).get({id: body.data.id});
-
-    // Si se aprueba, actualizamos el usuario con el id de la suscripción
-    if (preapproval.status === "authorized") {
-      // Actualizamos el usuario con el id de la suscripción
-      await api.user.update({suscription: preapproval.id});
-
-      // Invalidamos el usuario para mostrar el formulario de mensajes
-      revalidateTag("user", {expire: 0});
-    }
+    // Invalidamos el estado de la suscripción para mostrar el contenido actualizado
+    revalidateTag(`suscription-${body.data.id}`, {expire: 0});
   }
 
   // Respondemos con un estado 200 para indicarle que la notificación fue recibida
@@ -172,7 +167,7 @@ export async function POST(request: Request) {
 
 ## Actualizar el estado de la suscripción
 
-Este Route Handler va a recibir las notificaciones de pago de Mercado Pago, va a obtener la suscripción usando el ID que nos llega en la notificación. En caso de que la suscripción haya sido autorizada, va a actualizar el usuario con el ID de la suscripción e invalidar el tag `user` (`api.user.fetch` usa `"use cache"` con ese tag) para que la página muestre el formulario de mensajes.
+Este Route Handler va a recibir las notificaciones de suscripciones de Mercado Pago. Cada vez que una suscripción cambia (por ejemplo, cuando se autoriza), invalida el tag de esa suscripción (`api.suscription.status` usa `"use cache"` con ese tag) para que la próxima visita le pregunte a Mercado Pago el estado actualizado y muestre el contenido exclusivo.
 
 En una aplicación real deberíamos verificar la concordancia de la clave secreta, devolver errores más descriptivos, actualizar la suscripción si el usuario se da de baja y más, pero por simplicidad y tiempo te voy a dejar esa tarea a vos, podés ver más [acá](https://www.mercadopago.com.ar/developers/es/docs/your-integrations/notifications/webhooks#configuracinatravsdetusintegraciones).
 
@@ -185,7 +180,7 @@ Ahora vamos a iniciar sesión con nuestra cuenta de prueba comprador, vamos a ir
 > [!IMPORTANT]
 > Es importante que uses el mail de la cuenta de prueba comprador de Mercado Pago, ya que si usas otro mail, posiblemente obtengas un error (poco descriptivo) y no puedas suscribirte.
 
-Excelente, nuestra suscripción fue aprobada, la notificación fue recibida y si refrescamos la página e intentamos agregar un mensaje a la lista debería funcionar correctamente ✨.
+Excelente, nuestra suscripción fue aprobada, la notificación fue recibida y si refrescamos la página deberíamos ver el contenido exclusivo ✨.
 
 ---
 

@@ -1,44 +1,21 @@
 import {MercadoPagoConfig, OAuth, Payment, Preference} from "mercadopago";
 import {cacheLife, cacheTag} from "next/cache";
-
-import {read, write} from "@/db";
+import {cookies} from "next/headers";
 
 interface Message {
-  id: number;
+  id: string;
   text: string;
 }
-
-interface User {
-  id: number;
-  name: string;
-  marketplace: string | null;
-}
-
-const INITIAL_USER: User = {id: 1, name: "Goncy", marketplace: null};
 
 export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TOKEN!});
 
 const api = {
   user: {
-    async fetch(): Promise<User> {
-      // Cacheamos el usuario hasta que lo invalidemos con el tag "user"
-      "use cache";
+    async token() {
+      // Leemos el access token del vendedor de la cookie que guardamos al conectar su cuenta
+      const cookieStore = await cookies();
 
-      cacheLife("max");
-      cacheTag("user");
-
-      // Leemos el usuario guardado
-      return read("user", INITIAL_USER);
-    },
-    async update(data: Partial<User>): Promise<void> {
-      // Obtenemos los datos del usuario
-      const db = await api.user.fetch();
-
-      // Extendemos los datos con los nuevos datos
-      const draft = {...db, ...data};
-
-      // Guardamos los datos
-      write("user", draft);
+      return cookieStore.get("marketplace")?.value;
     },
     async authorize() {
       // Obtenemos la url de autorización
@@ -63,41 +40,34 @@ const api = {
         },
       });
 
-      // Devolvemos las credenciales
-      return credentials;
+      // Guardamos el access token en una cookie que solo puede leer el servidor
+      const cookieStore = await cookies();
+
+      cookieStore.set("marketplace", credentials.access_token!, {httpOnly: true});
     },
   },
   message: {
-    async list(): Promise<Message[]> {
-      // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
+    async list(marketplace: string): Promise<Message[]> {
+      // Cacheamos los mensajes de cada vendedor hasta que los invalidemos con el tag "messages"
       "use cache";
 
       cacheLife("max");
       cacheTag("messages");
 
-      // Si el vendedor todavía no conectó su cuenta, no hay mensajes
-      const {marketplace} = await api.user.fetch();
-
-      if (!marketplace) return [];
+      // Creamos el cliente de Mercado Pago usando el access token del vendedor
+      const client = new MercadoPagoConfig({accessToken: marketplace});
 
       // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado en la cuenta del vendedor con el texto en su `metadata`
-      const {results = []} = await new Payment(
-        new MercadoPagoConfig({accessToken: marketplace}),
-      ).search({
-        options: {
-          external_reference: "message",
-          status: "approved",
-          sort: "date_created",
-          criteria: "asc",
-        },
+      const {results = []} = await new Payment(client).search({
+        options: {external_reference: "message", status: "approved"},
       });
 
       // Devolvemos los pagos como mensajes
-      return results.map((payment) => ({id: Number(payment.id), text: payment.metadata.text}));
+      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
     },
     async submit(text: Message["text"], marketplace: string) {
-      // Creamos el cliente de Mercado Pago usando el access token del Marketplace
-      const client: MercadoPagoConfig = new MercadoPagoConfig({accessToken: marketplace});
+      // Creamos el cliente de Mercado Pago usando el access token del vendedor
+      const client = new MercadoPagoConfig({accessToken: marketplace});
 
       // Creamos la preferencia incluyendo el precio, titulo y metadata. La información de `items` es standard de Mercado Pago. La información que nosotros necesitamos para nuestra DB debería vivir en `metadata`.
       const preference = await new Preference(client).create({

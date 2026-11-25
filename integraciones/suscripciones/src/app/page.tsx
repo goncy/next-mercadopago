@@ -1,62 +1,37 @@
-import {updateTag} from "next/cache";
 import {redirect} from "next/navigation";
 
 import api from "@/api";
 
-// Queremos que esta página sea estática, invalidamos el usuario y los mensajes cuando cambian
-export const ensureStatic = "navigation";
-
 export default async function SuscripcionesPage() {
-  const messages = await api.message.list();
-  const user = await api.user.fetch();
+  // Verificamos si el usuario tiene una suscripción activa
+  const active = await api.suscription.active();
+
+  // Si está suscrito, mostramos el contenido exclusivo
+  if (active) {
+    return (
+      <article className="grid gap-3">
+        <h2>Contenido exclusivo</h2>
+        <p>Gracias por suscribirte. Este contenido solo lo pueden ver los suscriptores.</p>
+      </article>
+    );
+  }
 
   async function suscribe(formData: FormData) {
     "use server";
 
     const email = formData.get("email");
-    const url = await api.user.suscribe(email as string);
+    const url = await api.suscription.create(email as string);
 
     redirect(url);
   }
 
-  async function add(formData: FormData) {
-    "use server";
-
-    const message = formData.get("message");
-
-    await api.message.add(message as string);
-
-    updateTag("messages");
-  }
-
+  // Si no está suscrito, mostramos el formulario para suscribirse
   return (
-    <section className="grid gap-8">
-      {user.suscription ? (
-        <form action={add}>
-          <textarea name="message" placeholder="Hola perro" rows={3} />
-          <button type="submit">Enviar</button>
-        </form>
-      ) : (
-        <form action={suscribe} className="sm:grid-cols-[1fr_auto]">
-          <input
-            defaultValue={user.email}
-            name="email"
-            placeholder="goncy@goncy.com"
-            type="email"
-          />
-          <button className="justify-self-stretch" type="submit">
-            Suscribirse
-          </button>
-        </form>
-      )}
-      <section className="grid gap-3">
-        <h2>Mensajes</h2>
-        <ul>
-          {messages.map((message) => (
-            <li key={message.id}>{message.text}</li>
-          ))}
-        </ul>
-      </section>
-    </section>
+    <form action={suscribe} className="sm:grid-cols-[1fr_auto]">
+      <input name="email" placeholder="goncy@goncy.com" type="email" />
+      <button className="justify-self-stretch" type="submit">
+        Suscribirse
+      </button>
+    </form>
   );
 }

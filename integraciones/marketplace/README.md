@@ -15,7 +15,8 @@ La implementación de esta funcionalidad es muy similar a la integracion con Che
 5. [Autorizar la integración](#autorizar-la-integración)
 6. [Guardar el access token autorizado](#guardar-el-access-token-autorizado)
 7. [Crear una preferencia de pago en nombre del creador de contenido](#crear-una-preferencia-de-pago-en-nombre-del-creador-de-contenido)
-8. [Probar la integración](#probar-la-integración)
+8. [Listar los mensajes del creador de contenido](#listar-los-mensajes-del-creador-de-contenido)
+9. [Probar la integración](#probar-la-integración)
 
 ## Crear una cuenta de prueba extra para Marketplace
 
@@ -39,31 +40,34 @@ Nos vamos a desplazar hacia abajo y en `URLs de redireccionamiento` vamos a agre
 
 ## Revisando nuestra aplicación
 
-En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) si el usuario ya autorizó la integración, se renderiza el formulario para agregar un mensaje, de la misma manera que lo hacemos en la integración de Checkout Pro. Sino, se renderiza un link que nos redirige a Mercado Pago para que autorice la integración:
+En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) leemos el access token del creador de contenido desde una cookie. Si ya autorizó la integración, se renderiza el formulario para agregar un mensaje y la lista de mensajes, de la misma manera que lo hacemos en la integración de Checkout Pro. Sino, se renderiza un link que nos redirige a Mercado Pago para que autorice la integración:
 
 ```tsx
 import {redirect} from "next/navigation";
 
 import api from "@/api";
 
-// Queremos que esta página sea estática, invalidamos el usuario y los mensajes cuando cambian
-export const ensureStatic = "navigation";
-
 export default async function MarketplacePage() {
-  // Obtenemos el usuario y los mensajes
-  const user = await api.user.fetch();
-  const messages = await api.message.list();
+  // Obtenemos el access token del vendedor
+  const marketplace = await api.user.token();
 
-  // Obtenemos la URL de autorización
-  const authorizationUrl = await api.user.authorize();
+  // Si no autorizó la integración, mostramos un botón para redirigirlo a Mercado Pago a autorizar
+  if (!marketplace) {
+    const authorizationUrl = await api.user.authorize();
+
+    return <a href={authorizationUrl}>Conectar Mercado Pago</a>;
+  }
+
+  // Obtenemos los mensajes del vendedor
+  const messages = await api.message.list(marketplace);
 
   // Creamos una preferencia de pago y redirigimos al usuario a Mercado Pago
   async function add(formData: FormData) {
     "use server";
 
     const message = formData.get("text") as string;
-    // Obtenemos el usuario en el servidor para no exponer su access token en el formulario
-    const {marketplace} = await api.user.fetch();
+    // Leemos el access token en el servidor para no exponerlo en el formulario
+    const marketplace = await api.user.token();
     const url = await api.message.submit(message, marketplace!);
 
     redirect(url);
@@ -71,35 +75,25 @@ export default async function MarketplacePage() {
 
   return (
     <section className="grid gap-8">
-      {/* Si el usuario ya autorizó la integración, mostramos el formulario */}
-      {user.marketplace ? (
-        <form action={add}>
-          <textarea
-            name="text"
-            placeholder="Hola perro"
-            rows={3}
-          />
-          <button type="submit">
-            Enviar
-          </button>
-        </form>
-      ) : (
-        // Si no autorizó la integración, mostramos un botón para redirigirlo a Mercado Pago a autorizar
-        <a href={authorizationUrl}>
-          Conectar Mercado Pago
-        </a>
-      )}
-      <ul className="grid gap-2">
-        {messages.map((message) => (
-          <li key={message.id}>
-            {message.text}
-          </li>
-        ))}
-      </ul>
+      <form action={add}>
+        <textarea name="text" placeholder="Hola perro" rows={3} />
+        <button type="submit">Enviar</button>
+      </form>
+      <section className="grid gap-3">
+        <h2>Mensajes</h2>
+        <ul>
+          {messages.map((message) => (
+            <li key={message.id}>{message.text}</li>
+          ))}
+        </ul>
+      </section>
     </section>
   );
 }
 ```
+
+> [!NOTE]
+> Como leemos una cookie, la página se renderiza en cada request. El archivo `loading.tsx` la envuelve en un `<Suspense>` y muestra "Cargando..." mientras tanto, y el resto (el layout y ese fallback) sigue siendo estático.
 
 ## Obtener la URL de autorización
 
@@ -140,7 +134,6 @@ Vamos a continuar, aceptar y vamos a ser redirigidos a nuestra aplicación, dond
 Una vez que el usuario fue autorizado, es redirigido a nuestra aplicación hacia la ruta `/api/mercadopago/connect` junto con un parámetro `code` en la URL:
 
 ```ts
-import {revalidateTag} from "next/cache";
 import {NextRequest, NextResponse} from "next/server";
 
 import api from "@/api";
@@ -149,14 +142,8 @@ export async function GET(request: NextRequest) {
   // Obtenemos el code de la request
   const code = request.nextUrl.searchParams.get("code");
 
-  // Conectamos al usuario con el code y obtenemos las credenciales
-  const credentials = await api.user.connect(code!);
-
-  // Actualizamos las credenciales del usuario
-  await api.user.update({marketplace: credentials.access_token});
-
-  // Invalidamos el usuario para mostrar el formulario de mensajes
-  revalidateTag("user", {expire: 0});
+  // Conectamos al usuario con el code y guardamos su access token en una cookie
+  await api.user.connect(code!);
 
   // Redirigimos al usuario a la página del marketplace
   return NextResponse.redirect(process.env.APP_URL!);
@@ -165,16 +152,22 @@ export async function GET(request: NextRequest) {
 
 Vamos a extraer ese parametro y se lo pasamos a la función `connect` en `user` para obtener las credenciales del usuario, incluyendo un access token que nos permite crear preferencias de pago en nombre del creador de contenido.
 
-Luego actualizamos el usuario con el access token para poder accederlo desde nuestra aplicación, invalidamos el tag `user` (la página es estática y `api.user.fetch` usa `"use cache"` con ese tag) y redirigimos al usuario nuevamente a la página de inicio.
+Ese access token lo guardamos en una cookie `httpOnly` (que solo puede leer el servidor) y redirigimos al usuario nuevamente a la página de inicio.
 
 > [!NOTE]
 > Las credenciales incluyen más información, como un refresh token, cuando vence y más. En una aplicación real deberíamos guardar ambos e intercambiar el refresh token por un nuevo access token cuando este expire. Pero esa tarea te la dejo a vos.
 
-Dentro de `/src/api.ts`, la función `connect` en `user` se encarga de intercambiar el code por esas credenciales que luegos guardamos en el usuario:
+Dentro de `/src/api.ts`, la función `connect` en `user` se encarga de intercambiar el code por esas credenciales y guardar el access token en la cookie. La función `token` la lee cuando la necesitamos:
 
 ```ts
 const api = {
-  message: {
+  user: {
+    async token() {
+      // Leemos el access token del vendedor de la cookie que guardamos al conectar su cuenta
+      const cookieStore = await cookies();
+
+      return cookieStore.get("marketplace")?.value;
+    },
     async connect(code: string) {
       // Obtenemos las credenciales del usuario usando el code que obtuvimos de oauth
       const credentials = await new OAuth(mercadopago).create({
@@ -186,8 +179,10 @@ const api = {
         },
       });
 
-      // Devolvemos las credenciales
-      return credentials;
+      // Guardamos el access token en una cookie que solo puede leer el servidor
+      const cookieStore = await cookies();
+
+      cookieStore.set("marketplace", credentials.access_token!, {httpOnly: true});
     },
   }
 }
@@ -201,8 +196,8 @@ Dentro de `/src/api.ts`, la función `submit` en `message` se encarga de crear u
 const api = {
   message: {
     async submit(text: Message["text"], marketplace: string) {
-      // Creamos el cliente de Mercado Pago usando el access token del Marketplace
-      const client: MercadoPagoConfig = new MercadoPagoConfig({accessToken: marketplace});
+      // Creamos el cliente de Mercado Pago usando el access token del vendedor
+      const client = new MercadoPagoConfig({accessToken: marketplace});
 
       // Creamos la preferencia incluyendo el precio, titulo y metadata. La información de `items` es standard de Mercado Pago. La información que nosotros necesitamos para nuestra DB debería vivir en `metadata`.
       const preference = await new Preference(client).create({
@@ -218,6 +213,8 @@ const api = {
           metadata: {
             text,
           },
+          // Marcamos el pago como mensaje para poder buscarlo después
+          external_reference: "message",
           // Le agregamos ARS 5 de comisión
           marketplace_fee: 5,
         },
@@ -228,6 +225,35 @@ const api = {
     }
   }
 }
+```
+
+## Listar los mensajes del creador de contenido
+
+Igual que en Checkout Pro, no tenemos una base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`. La diferencia es que los pagos van a la cuenta del creador de contenido, así que los buscamos con su access token:
+
+```ts
+const api = {
+  message: {
+    async list(marketplace: string): Promise<Message[]> {
+      // Cacheamos los mensajes de cada vendedor hasta que los invalidemos con el tag "messages"
+      "use cache";
+
+      cacheLife("max");
+      cacheTag("messages");
+
+      // Creamos el cliente de Mercado Pago usando el access token del vendedor
+      const client = new MercadoPagoConfig({accessToken: marketplace});
+
+      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado en la cuenta del vendedor con el texto en su `metadata`
+      const {results = []} = await new Payment(client).search({
+        options: {external_reference: "message", status: "approved"},
+      });
+
+      // Devolvemos los pagos como mensajes
+      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
+    },
+  },
+};
 ```
 
 ## Probar la integración
