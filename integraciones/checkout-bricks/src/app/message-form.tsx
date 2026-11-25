@@ -37,7 +37,7 @@ export default function MessageForm({
 
   useEffect(() => {
     // Inicializamos el SDK
-    initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!);
+    initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!, {locale: "es-AR"});
 
     // Desmontamos el componente de bricks cuando se desmonte el componente
     return () => {
@@ -50,7 +50,23 @@ export default function MessageForm({
     <form ref={formRef}>
       <textarea required name="message" placeholder="Hola perro" rows={3} />
       <CardPayment
-        customization={{paymentMethods: {maxInstallments: 1, minInstallments: 1}}}
+        customization={{
+          paymentMethods: {maxInstallments: 1, minInstallments: 1},
+          // Usamos el tema oscuro con los colores de la aplicación
+          visual: {
+            style: {
+              theme: "dark",
+              customVariables: {
+                baseColor: "#fff",
+                buttonTextColor: "#000",
+                formBackgroundColor: "#000",
+                inputBackgroundColor: "#0a0a0a",
+                outlinePrimaryColor: "#262626",
+                formPadding: "0px",
+              },
+            },
+          },
+        }}
         initialization={{amount}}
         onSubmit={handleSubmit}
       />

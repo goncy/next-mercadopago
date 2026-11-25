@@ -23,11 +23,14 @@ export default async function HomePage() {
         <textarea name="text" placeholder="Hola perro" rows={3} />
         <button type="submit">Enviar</button>
       </form>
-      <ul>
-        {messages.map((message) => (
-          <li key={message.id}>{message.text}</li>
-        ))}
-      </ul>
+      <section className="grid gap-3">
+        <h2>Mensajes</h2>
+        <ul>
+          {messages.map((message) => (
+            <li key={message.id}>{message.text}</li>
+          ))}
+        </ul>
+      </section>
     </section>
   );
 }

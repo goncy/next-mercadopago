@@ -27,30 +27,33 @@ export default async function SuscripcionesPage() {
   }
 
   return (
-    <div className="grid gap-8">
+    <section className="grid gap-8">
       {user.suscription ? (
         <form action={add}>
-          <textarea name="message" rows={4} />
-          <button type="submit">Submit</button>
+          <textarea name="message" placeholder="Hola perro" rows={3} />
+          <button type="submit">Enviar</button>
         </form>
       ) : (
-        <form action={suscribe}>
+        <form action={suscribe} className="sm:grid-cols-[1fr_auto]">
           <input
             defaultValue={user.email}
             name="email"
             placeholder="goncy@goncy.com"
             type="email"
           />
-          <button type="submit">Suscribirse</button>
+          <button className="justify-self-stretch" type="submit">
+            Suscribirse
+          </button>
         </form>
       )}
-      <ul>
-        {messages.map((message) => (
-          <li key={message.id}>
-            <p>{message.text}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
+      <section className="grid gap-3">
+        <h2>Mensajes</h2>
+        <ul>
+          {messages.map((message) => (
+            <li key={message.id}>{message.text}</li>
+          ))}
+        </ul>
+      </section>
+    </section>
   );
 }

@@ -1,26 +1,17 @@
 @import "tailwindcss";
 
-:root {
-  color-scheme: dark;
-  color: CanvasText;
-  background-color: Canvas;
-
-  --primary: hsl(204, 70%, 50%);
-  --primary-foreground: hsl(0 0% 98%);
-}
-
-@theme inline {
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-}
-
 /* Estilos base de la aplicación */
 @layer base {
+  :root {
+    @apply bg-black text-neutral-100;
+    color-scheme: dark;
+  }
+
   form {
-    @apply grid gap-2;
+    @apply grid gap-3;
 
     input, select, textarea, div {
-      @apply border border-primary rounded p-2 w-full min-h-10;
+      @apply w-full min-h-10 rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm outline-none placeholder:text-neutral-500 focus:border-neutral-500;
 
       iframe {
         @apply h-5;
@@ -28,16 +19,19 @@
     }
 
     button {
-      @apply bg-primary text-primary-foreground rounded p-2 w-full;
+      @apply h-10 justify-self-end rounded-md bg-white px-4 text-sm font-medium text-black hover:bg-neutral-200 cursor-pointer;
     }
   }
 
+  h2 {
+    @apply text-sm font-medium text-neutral-400;
+  }
 
   ul {
-    @apply grid gap-2;
+    @apply divide-y divide-neutral-800 rounded-lg border border-neutral-800;
 
     li {
-      @apply rounded bg-primary/20 p-4;
+      @apply px-4 py-3 text-sm;
     }
   }
 }
