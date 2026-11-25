@@ -1,6 +1,7 @@
 import {readFileSync, writeFileSync} from "node:fs";
 
 import {MercadoPagoConfig, Preference, OAuth} from "mercadopago";
+import {cacheLife, cacheTag} from "next/cache";
 
 interface Message {
   id: number;
@@ -18,6 +19,12 @@ export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_AC
 const api = {
   user: {
     async fetch(): Promise<User> {
+      // Cacheamos el usuario hasta que lo invalidemos con el tag "user"
+      "use cache";
+
+      cacheLife("max");
+      cacheTag("user");
+
       // Leemos el archivo de la base de datos del usuario
       const db = readFileSync("db/user.db");
 
@@ -63,6 +70,12 @@ const api = {
   },
   message: {
     async list(): Promise<Message[]> {
+      // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
+      "use cache";
+
+      cacheLife("max");
+      cacheTag("messages");
+
       // Leemos el archivo de la base de datos de los mensajes
       const db = readFileSync("db/message.db");
 

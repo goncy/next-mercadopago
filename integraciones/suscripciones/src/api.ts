@@ -1,6 +1,7 @@
 import fs from "node:fs";
 
 import {MercadoPagoConfig, PreApproval} from "mercadopago";
+import {cacheLife, cacheTag} from "next/cache";
 
 interface Message {
   id: number;
@@ -39,6 +40,11 @@ const api = {
       return suscription.init_point!;
     },
     async fetch(): Promise<User> {
+      "use cache";
+
+      cacheLife("max");
+      cacheTag("user");
+
       const user = fs.readFileSync("db/user.db", "utf-8");
 
       return JSON.parse(user);
@@ -61,6 +67,11 @@ const api = {
       fs.writeFileSync("db/message.db", JSON.stringify(messages));
     },
     async list(): Promise<Message[]> {
+      "use cache";
+
+      cacheLife("max");
+      cacheTag("messages");
+
       const messages = fs.readFileSync("db/message.db", "utf-8");
 
       return JSON.parse(messages);

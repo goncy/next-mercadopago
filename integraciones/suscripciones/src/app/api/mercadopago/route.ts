@@ -1,4 +1,5 @@
 import {PreApproval} from "mercadopago";
+import {revalidateTag} from "next/cache";
 
 import api, {mercadopago} from "@/api";
 
@@ -15,6 +16,9 @@ export async function POST(request: Request) {
     if (preapproval.status === "authorized") {
       // Actualizamos el usuario con el id de la suscripción
       await api.user.update({suscription: preapproval.id});
+
+      // Invalidamos el usuario para mostrar el formulario de mensajes
+      revalidateTag("user", {expire: 0});
     }
   }
 

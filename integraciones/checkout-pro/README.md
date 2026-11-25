@@ -26,7 +26,7 @@ import {redirect} from "next/navigation";
 import api from "@/api";
 
 // Queremos que esta página sea estática, nos encargaremos de revalidar los datos cuando agreguemos un nuevo mensaje
-export const dynamic = "force-static";
+export const ensureStatic = "navigation";
 
 export default async function HomePage() {
   const messages = await api.message.list();
@@ -107,7 +107,7 @@ Tenemos un Route Handler (`src/app/api/mercadopago/route.ts`) definido en nuestr
 
 ```ts
 import {Payment} from "mercadopago";
-import {revalidatePath} from "next/cache";
+import {revalidateTag} from "next/cache";
 
 import api, {mercadopago} from "@/api";
 
@@ -123,8 +123,8 @@ export async function POST(request: Request) {
     // Obtenemos los datos
     await api.message.add({id: payment.id!, text: payment.metadata.text});
 
-    // Revalidamos la página de inicio para mostrar los datos actualizados
-    revalidatePath("/");
+    // Invalidamos los mensajes para mostrar los datos actualizados
+    revalidateTag("messages", {expire: 0});
   }
 
   // Respondemos con un estado 200 para indicarle que la notificación fue recibida
@@ -137,7 +137,10 @@ export async function POST(request: Request) {
 
 ## Verificar la autenticidad del pago
 
-Este Route Handler va a recibir las notificaciones de pago de Mercado Pago, va a obtener el pago usando el ID que nos llega en la notificación. En caso de que el pago sea aprobado, va a agregar el mensaje a nuestra lista de mensajes y va a revalidar la página de inicio para que se muestren los mensajes actualizados.
+Este Route Handler va a recibir las notificaciones de pago de Mercado Pago, va a obtener el pago usando el ID que nos llega en la notificación. En caso de que el pago sea aprobado, va a agregar el mensaje a nuestra lista de mensajes y va a invalidar el tag `messages` para que se muestren los mensajes actualizados.
+
+> [!NOTE]
+> La página es estática (`ensureStatic = "navigation"` hace que el build falle si algo la vuelve dinámica). `api.message.list` usa `"use cache"` con el tag `messages`. Como la notificación llega a un Route Handler usamos `revalidateTag` con `{expire: 0}` para que la próxima visita ya vea el mensaje nuevo.
 
 De esta manera nos aseguramos de que el pago exista y haya sido aprobado. También nuestro método `api.message.add` se encarga de validar que no exista un mensaje con el mismo ID, para que no se dupliquen.
 

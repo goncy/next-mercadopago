@@ -2,8 +2,8 @@ import {redirect} from "next/navigation";
 
 import api from "@/api";
 
-// Queremos que esta página sea dinámica para saber el estado del marketplace
-export const dynamic = "force-dynamic";
+// Queremos que esta página sea estática, invalidamos el usuario y los mensajes cuando cambian
+export const ensureStatic = "navigation";
 
 export default async function MarketplacePage() {
   // Obtenemos el usuario y los mensajes
@@ -18,7 +18,9 @@ export default async function MarketplacePage() {
     "use server";
 
     const message = formData.get("text") as string;
-    const url = await api.message.submit(message, user.marketplace!);
+    // Obtenemos el usuario en el servidor para no exponer su access token en el formulario
+    const {marketplace} = await api.user.fetch();
+    const url = await api.message.submit(message, marketplace!);
 
     redirect(url);
   }

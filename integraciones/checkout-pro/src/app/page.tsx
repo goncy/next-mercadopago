@@ -3,7 +3,7 @@ import {redirect} from "next/navigation";
 import api from "@/api";
 
 // Queremos que esta página sea estática, nos encargaremos de revalidar los datos cuando agreguemos un nuevo mensaje
-export const dynamic = "force-static";
+export const ensureStatic = "navigation";
 
 export default async function HomePage() {
   const messages = await api.message.list();
