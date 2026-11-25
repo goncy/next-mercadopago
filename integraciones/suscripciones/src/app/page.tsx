@@ -2,9 +2,6 @@ import {redirect} from "next/navigation";
 
 import api from "@/api";
 
-// La página lee la cookie de la suscripción en cada request, pero el layout y `loading.tsx` siguen siendo estáticos
-export const ensureStatic = "shell";
-
 export default async function SuscripcionesPage() {
   // Verificamos si el usuario tiene una suscripción activa
   const active = await api.suscription.active();

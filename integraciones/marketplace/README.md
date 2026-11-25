@@ -47,9 +47,6 @@ import {redirect} from "next/navigation";
 
 import api from "@/api";
 
-// La página lee la cookie del vendedor en cada request, pero el layout y `loading.tsx` siguen siendo estáticos
-export const ensureStatic = "shell";
-
 export default async function MarketplacePage() {
   // Obtenemos el access token del vendedor
   const marketplace = await api.user.token();
@@ -96,7 +93,7 @@ export default async function MarketplacePage() {
 ```
 
 > [!NOTE]
-> Como leemos una cookie, la página se renderiza en cada request. El archivo `loading.tsx` la envuelve en un `<Suspense>` y muestra "Cargando..." mientras tanto, así que con `ensureStatic = "shell"` el resto (el layout y ese fallback) sigue siendo estático.
+> Como leemos una cookie, la página se renderiza en cada request. El archivo `loading.tsx` la envuelve en un `<Suspense>` y muestra "Cargando..." mientras tanto, y el resto (el layout y ese fallback) sigue siendo estático.
 
 ## Obtener la URL de autorización
 

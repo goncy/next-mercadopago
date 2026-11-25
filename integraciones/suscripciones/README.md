@@ -24,9 +24,6 @@ import {redirect} from "next/navigation";
 
 import api from "@/api";
 
-// La página lee la cookie de la suscripción en cada request, pero el layout y `loading.tsx` siguen siendo estáticos
-export const ensureStatic = "shell";
-
 export default async function SuscripcionesPage() {
   // Verificamos si el usuario tiene una suscripción activa
   const active = await api.suscription.active();
@@ -63,7 +60,7 @@ export default async function SuscripcionesPage() {
 ```
 
 > [!NOTE]
-> En esta aplicación de ejemplo no tenemos usuarios ni base de datos: guardamos el ID de la suscripción en una cookie y le preguntamos a Mercado Pago su estado. Como leemos una cookie, la página se renderiza en cada request. El archivo `loading.tsx` la envuelve en un `<Suspense>` y muestra "Cargando..." mientras tanto, así que con `ensureStatic = "shell"` el resto (el layout y ese fallback) sigue siendo estático. En una aplicación real vas a asociar la suscripción a tu usuario y manejar la lógica de autenticación normalmente.
+> En esta aplicación de ejemplo no tenemos usuarios ni base de datos: guardamos el ID de la suscripción en una cookie y le preguntamos a Mercado Pago su estado. Como leemos una cookie, la página se renderiza en cada request. El archivo `loading.tsx` la envuelve en un `<Suspense>` y muestra "Cargando..." mientras tanto, y el resto (el layout y ese fallback) sigue siendo estático. En una aplicación real vas a asociar la suscripción a tu usuario y manejar la lógica de autenticación normalmente.
 
 ## Crear una suscripción
 

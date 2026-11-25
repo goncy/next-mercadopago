@@ -2,9 +2,6 @@ import {redirect} from "next/navigation";
 
 import api from "@/api";
 
-// La página lee la cookie del vendedor en cada request, pero el layout y `loading.tsx` siguen siendo estáticos
-export const ensureStatic = "shell";
-
 export default async function MarketplacePage() {
   // Obtenemos el access token del vendedor
   const marketplace = await api.user.token();
