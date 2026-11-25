@@ -5,7 +5,6 @@ import eslintPluginReactHooks from "eslint-plugin-react-hooks";
 import {fixupPluginRules} from "@eslint/compat";
 import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
 import eslintPluginImport from "eslint-plugin-import";
-import eslintPluginReactCompiler from "eslint-plugin-react-compiler";
 import eslintPluginNext from "@next/eslint-plugin-next";
 import eslintPluginJsxA11y from "eslint-plugin-jsx-a11y";
 import vercelStyleGuideTypescript from "@vercel/style-guide/eslint/typescript";
@@ -34,7 +33,6 @@ export default [
     plugins: {
       react: fixupPluginRules(eslintPluginReact),
       "react-hooks": fixupPluginRules(eslintPluginReactHooks),
-      "react-compiler": fixupPluginRules(eslintPluginReactCompiler),
       "jsx-a11y": fixupPluginRules(eslintPluginJsxA11y),
     },
     languageOptions: {
@@ -71,7 +69,6 @@ export default [
           reservedFirst: true,
         },
       ],
-      "react-compiler/react-compiler": "error",
       "react/jsx-no-leaked-render": "off",
       "jsx-a11y/no-static-element-interactions": "off",
       "jsx-a11y/click-events-have-key-events": "off",

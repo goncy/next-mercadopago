@@ -3,7 +3,7 @@
 import type {
   ICardPaymentBrickPayer,
   ICardPaymentFormData,
-} from "@mercadopago/sdk-react/bricks/cardPayment/type";
+} from "@mercadopago/sdk-react/esm/bricks/cardPayment/type";
 
 import {useEffect, useRef} from "react";
 import {initMercadoPago, CardPayment} from "@mercadopago/sdk-react";
