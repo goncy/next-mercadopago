@@ -28,7 +28,7 @@ Por suerte muchas veces, dependiendo de que tipo de integración hayas elegido o
 En vez de copiarlas a mano, [configurá el MCP](../mcp/README.md) y copiá este prompt en tu agente. El agente las escribe directamente en tu `.env.local`:
 
 ```text
-Usando el MCP de Mercado Pago, traé las credenciales de mi aplicación (si tengo más de una, preguntame cuál usar). Copiá integraciones/<integración>/.env.example a integraciones/<integración>/.env.local y completá MP_ACCESS_TOKEN, NEXT_PUBLIC_MP_PUBLIC_KEY, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET (solo las que estén en el archivo) con las credenciales de prueba. No me muestres las credenciales en el chat y no agregues el archivo a git.
+Usando el MCP de Mercado Pago, traé las credenciales de mi aplicación (si tengo más de una, preguntame cuál usar). Copiá .env.example a .env.local y completá MP_ACCESS_TOKEN, NEXT_PUBLIC_MP_PUBLIC_KEY, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET (solo las que estén en el archivo) con las credenciales de prueba. No me muestres las credenciales en el chat y no agregues el archivo a git.
 ```
 
 ---

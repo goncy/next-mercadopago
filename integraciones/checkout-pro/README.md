@@ -8,7 +8,7 @@ Podés preparar todo de dos formas:
 - **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md) y [exponé el puerto 3000](../../configuracion/exponer-puerto/README.md): en el prompt, reemplazá `<URL pública>` por esa URL.
 
 ```text
-Usando el MCP de Mercado Pago, prepará integraciones/checkout-pro para desarrollo:
+Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
 1. Creá una aplicación de Checkout Pro llamada next-mercadopago-checkout-pro. Mostrame el resumen antes de crearla.
 2. Creá una cuenta de prueba compradora con 10000 de saldo y mostrame su usuario y contraseña.
 3. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de prueba y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.

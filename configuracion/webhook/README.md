@@ -5,7 +5,7 @@ Para poder configurar un webhook en Mercado Pago, primero necesitamos [exponer n
 Podés hacerlo de dos formas: **a mano**, siguiendo los pasos de abajo, o **con el MCP de Mercado Pago**: [configurá el MCP](../mcp/README.md) y copiá este prompt en tu agente.
 
 ```text
-Usando el MCP de Mercado Pago, configurá el webhook de mi aplicación en <APP_URL>/api/mercadopago (tomá APP_URL de integraciones/<integración>/.env.local) para los eventos de <Pagos | Planes y suscripciones>.
+Usando el MCP de Mercado Pago, configurá el webhook de mi aplicación en <APP_URL>/api/mercadopago (tomá APP_URL de .env.local) para los eventos de <Pagos | Planes y suscripciones>.
 ```
 
 Después de hacer un pago de prueba podés pedirle que revise si las notificaciones llegaron:

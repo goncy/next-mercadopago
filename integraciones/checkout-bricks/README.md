@@ -8,7 +8,7 @@ Podés preparar todo de dos formas:
 - **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md).
 
 ```text
-Usando el MCP de Mercado Pago, prepará integraciones/checkout-bricks para desarrollo:
+Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
 1. Creá una aplicación de Checkout Bricks llamada next-mercadopago-checkout-bricks. Mostrame el resumen antes de crearla.
 2. Copiá .env.example a .env.local y completá MP_ACCESS_TOKEN y NEXT_PUBLIC_MP_PUBLIC_KEY con las credenciales de prueba. No me muestres las credenciales y no agregues el archivo a git.
 3. Mostrame las tarjetas de prueba de mi país y qué nombre de titular usar para un pago aprobado y uno rechazado.
