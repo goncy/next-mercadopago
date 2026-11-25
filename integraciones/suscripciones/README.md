@@ -21,22 +21,13 @@ En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) se renderiz
 
 ```tsx
 import {redirect} from "next/navigation";
-import {Suspense} from "react";
 
 import api from "@/api";
 
-// La página lee la cookie de la suscripción en cada request, pero el resto de la página (el shell) sigue siendo estático
+// La página lee la cookie de la suscripción en cada request, `loading.tsx` la envuelve en un Suspense y el resto (el shell) sigue siendo estático
 export const ensureStatic = "shell";
 
-export default function SuscripcionesPage() {
-  return (
-    <Suspense fallback={<p>Cargando...</p>}>
-      <Suscripcion />
-    </Suspense>
-  );
-}
-
-async function Suscripcion() {
+export default async function SuscripcionesPage() {
   // Verificamos si el usuario tiene una suscripción activa
   const active = await api.suscription.active();
 
@@ -72,7 +63,7 @@ async function Suscripcion() {
 ```
 
 > [!NOTE]
-> En esta aplicación de ejemplo no tenemos usuarios ni base de datos: guardamos el ID de la suscripción en una cookie y le preguntamos a Mercado Pago su estado. Como leemos una cookie, esa parte de la página se renderiza en cada request y va dentro de un `<Suspense>`, y con `ensureStatic = "shell"` el resto de la página sigue siendo estático. En una aplicación real vas a asociar la suscripción a tu usuario y manejar la lógica de autenticación normalmente.
+> En esta aplicación de ejemplo no tenemos usuarios ni base de datos: guardamos el ID de la suscripción en una cookie y le preguntamos a Mercado Pago su estado. Como leemos una cookie, la página se renderiza en cada request. El archivo `loading.tsx` la envuelve en un `<Suspense>` y muestra "Cargando..." mientras tanto, así que con `ensureStatic = "shell"` el resto (el layout y ese fallback) sigue siendo estático. En una aplicación real vas a asociar la suscripción a tu usuario y manejar la lógica de autenticación normalmente.
 
 ## Crear una suscripción
 

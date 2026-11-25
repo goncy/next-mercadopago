@@ -1,20 +1,11 @@
 import {redirect} from "next/navigation";
-import {Suspense} from "react";
 
 import api from "@/api";
 
-// La página lee la cookie de la suscripción en cada request, pero el resto de la página (el shell) sigue siendo estático
+// La página lee la cookie de la suscripción en cada request, `loading.tsx` la envuelve en un Suspense y el resto (el shell) sigue siendo estático
 export const ensureStatic = "shell";
 
-export default function SuscripcionesPage() {
-  return (
-    <Suspense fallback={<p>Cargando...</p>}>
-      <Suscripcion />
-    </Suspense>
-  );
-}
-
-async function Suscripcion() {
+export default async function SuscripcionesPage() {
   // Verificamos si el usuario tiene una suscripción activa
   const active = await api.suscription.active();
 

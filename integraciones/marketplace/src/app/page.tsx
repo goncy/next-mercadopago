@@ -1,20 +1,11 @@
 import {redirect} from "next/navigation";
-import {Suspense} from "react";
 
 import api from "@/api";
 
-// La página lee la cookie del vendedor en cada request, pero el resto de la página (el shell) sigue siendo estático
+// La página lee la cookie del vendedor en cada request, `loading.tsx` la envuelve en un Suspense y el resto (el shell) sigue siendo estático
 export const ensureStatic = "shell";
 
-export default function MarketplacePage() {
-  return (
-    <Suspense fallback={<p>Cargando...</p>}>
-      <Marketplace />
-    </Suspense>
-  );
-}
-
-async function Marketplace() {
+export default async function MarketplacePage() {
   // Obtenemos el access token del vendedor
   const marketplace = await api.user.token();
 

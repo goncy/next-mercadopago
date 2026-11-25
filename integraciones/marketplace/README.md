@@ -44,22 +44,13 @@ En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) leemos el a
 
 ```tsx
 import {redirect} from "next/navigation";
-import {Suspense} from "react";
 
 import api from "@/api";
 
-// La página lee la cookie del vendedor en cada request, pero el resto de la página (el shell) sigue siendo estático
+// La página lee la cookie del vendedor en cada request, `loading.tsx` la envuelve en un Suspense y el resto (el shell) sigue siendo estático
 export const ensureStatic = "shell";
 
-export default function MarketplacePage() {
-  return (
-    <Suspense fallback={<p>Cargando...</p>}>
-      <Marketplace />
-    </Suspense>
-  );
-}
-
-async function Marketplace() {
+export default async function MarketplacePage() {
   // Obtenemos el access token del vendedor
   const marketplace = await api.user.token();
 
@@ -105,7 +96,7 @@ async function Marketplace() {
 ```
 
 > [!NOTE]
-> Como leemos una cookie, esa parte de la página se renderiza en cada request y va dentro de un `<Suspense>`. Con `ensureStatic = "shell"` el resto de la página (el shell) sigue siendo estático.
+> Como leemos una cookie, la página se renderiza en cada request. El archivo `loading.tsx` la envuelve en un `<Suspense>` y muestra "Cargando..." mientras tanto, así que con `ensureStatic = "shell"` el resto (el layout y ese fallback) sigue siendo estático.
 
 ## Obtener la URL de autorización
 
