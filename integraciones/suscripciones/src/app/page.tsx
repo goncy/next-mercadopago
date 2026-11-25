@@ -34,14 +34,16 @@ export default async function SuscripcionesPage() {
           <button type="submit">Submit</button>
         </form>
       ) : (
-        <form action={suscribe}>
+        <form action={suscribe} className="sm:grid-cols-[1fr_auto]">
           <input
             defaultValue={user.email}
             name="email"
             placeholder="goncy@goncy.com"
             type="email"
           />
-          <button type="submit">Suscribirse</button>
+          <button className="h-10 justify-self-stretch" type="submit">
+            Suscribirse
+          </button>
         </form>
       )}
       <ul>
