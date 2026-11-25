@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "oxlint && oxfmt --check",
+    "format": "oxfmt"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.5",
@@ -18,25 +19,12 @@
     "tailwindcss": "^4.3.5"
   },
   "devDependencies": {
-    "@eslint/compat": "^2.1.1",
-    "@next/eslint-plugin-next": "16.4.6",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vercel/style-guide": "^6.0.0",
     "babel-plugin-react-compiler": "1.0.0",
-    "eslint": "^10.15.0",
-    "eslint-config-next": "16.4.6",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-prettier": "^5.5.7",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "globals": "^17.14.0",
-    "prettier": "^3.10.1",
-    "prettier-plugin-tailwindcss": "^0.8.1",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.74.0"
+    "oxfmt": "^0.80.0",
+    "oxlint": "^1.95.0",
+    "typescript": "^6.0.3"
   }
 }
