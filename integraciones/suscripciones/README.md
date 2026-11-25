@@ -9,13 +9,13 @@ Podés preparar todo de dos formas:
 
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
-1. Con mercadopago-mcp-server, creá una aplicación de Suscripciones llamada <tu usuario>-next-mercadopago-suscripciones. Mostrame el resumen antes de crearla.
+1. Con mercadopago-mcp-principal, creá una aplicación de Suscripciones llamada <tu usuario>-next-mercadopago-suscripciones. Mostrame el resumen antes de crearla.
 2. Cargale 10000 de saldo a la cuenta de prueba compradora que se creó con la aplicación y mostrame su usuario.
 3. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de prueba y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
-4. Con mercadopago-vendedor, configurá el webhook en <URL pública>/api/mercadopago para los eventos de Planes y suscripciones, en la aplicación de la vendedora de prueba cuyas credenciales usaste en el paso 3. Si mercadopago-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
+4. Con mercadopago-mcp-vendedor, configurá el webhook en <URL pública>/api/mercadopago para los eventos de Planes y suscripciones, en la aplicación de la vendedora de prueba cuyas credenciales usaste en el paso 3. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
 ```
 
-El webhook se configura con `mercadopago-vendedor` porque las credenciales de prueba son de la aplicación de la vendedora de prueba: con tu cuenta principal, el MCP no puede modificarla. El usuario y la contraseña de la vendedora y de la compradora están en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app), en la aplicación, en `Cuentas de prueba`.
+El webhook se configura con `mercadopago-mcp-vendedor` porque las credenciales de prueba son de la aplicación de la vendedora de prueba: con tu cuenta principal, el MCP no puede modificarla. El usuario y la contraseña de la vendedora y de la compradora están en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app), en la aplicación, en `Cuentas de prueba`.
 
 > [!IMPORTANT]
 > Para suscribirte usá el email de la cuenta compradora de prueba: `test_user_<número>@testuser.com`, donde `<número>` es el de su usuario `TESTUSER<número>`. Con cualquier otro email, Mercado Pago responde `Both payer and collector must be real or test users`. Pagá con la sesión de la compradora, no con la de la vendedora.
