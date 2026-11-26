@@ -87,6 +87,13 @@ const api = {
           external_reference: "message",
           // Le agregamos ARS 5 de comisión
           marketplace_fee: 5,
+          // Le pedimos a Mercado Pago que nos notifique los cambios del pago en nuestro webhook
+          notification_url: `${process.env.APP_URL}/api/mercadopago`,
+          // Cuando el pago se aprueba, Mercado Pago vuelve solo a nuestra aplicación
+          back_urls: {
+            success: process.env.APP_URL,
+          },
+          auto_return: "approved",
         },
       });
 
