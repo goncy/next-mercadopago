@@ -32,9 +32,6 @@ import api from "@/api";
 
 import MessageForm from "./message-form";
 
-// La página lee una cookie, así que se renderiza en cada visita y no necesita ser instantánea
-export const instant = false;
-
 export default async function HomePage() {
   // Obtenemos el último pago
   const payment = await api.message.last();
@@ -67,7 +64,7 @@ export default async function HomePage() {
 ```
 
 > [!NOTE]
-> Como la página lee una cookie, se renderiza en cada visita (`instant = false`). Cuando el Server Action guarda la cookie, Next.js vuelve a renderizar la página y el último pago aparece al instante.
+> Como la página lee una cookie, se renderiza en cada visita. El archivo `loading.tsx` la envuelve en un `<Suspense>` y muestra "Cargando..." mientras tanto. Cuando el Server Action guarda la cookie, Next.js vuelve a renderizar la página y el último pago aparece al instante.
 
 ## Crear el formulario de pago
 
