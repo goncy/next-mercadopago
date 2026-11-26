@@ -1,6 +1,6 @@
 # Integración de Mercado Pago en Next.js
 
-En este respositorio vamos a aprender a integrar Mercado Pago en una aplicación de comentarios utilizando Next.js con App Router. El fin de la aplicación es poder agregar mensajes a una lista de mensajes.
+En este respositorio vamos a aprender a integrar Mercado Pago en una aplicación de comentarios utilizando Next.js con App Router. El fin de la aplicación es poder pagar por escribir un mensaje.
 
 ## Índice
 
@@ -11,15 +11,15 @@ Vamos a tener diferentes carpetas y aplicaciones para cada tipo de integración,
     2. [Suscripciones](./integraciones/suscripciones/README.md): Los usuarios van a tener que suscribirse para poder ver contenido exclusivo. Usamos Suscripciones sin plan asociado con pago pendiente. Configuramos un webhook para recibir notificaciones de suscripción y actualizar su estado.
     3. [Checkout Bricks](./integraciones/checkout-bricks/README.md): Los usuarios van a pagar por un mensaje y ver su último pago. Usamos Checkout Bricks para tomar los datos de pago dentro de nuestra aplicación.
     4. [Split de pagos (Marketplace)](./integraciones/marketplace/README.md): Vamos a ser el intermediario entre un usuario de nuestra aplicación que quiere recibir mensajes en su muro y un usuario que quiere pagar para escribir en ese muro. Vamos a usar Checkout Pro con la integración de Marketplace para quedarnos con una ganancia por cada mensaje.
-    5. [Checkout API](./integraciones/checkout-api/README.md): Los usuarios van a pagar desde nuestra plataforma y usando nuestros propios componentes, lo que permite tener una UI más adaptada a nuestras necesidades. Vamos a usar la librería de componentes de React de MercadoPago para poder pagar de manera segura y compliant.
+    5. [Checkout API](./integraciones/checkout-api/README.md): Los usuarios van a pagar por un mensaje y ver su último pago, desde nuestra plataforma y usando nuestros propios componentes, lo que permite tener una UI más adaptada a nuestras necesidades. Vamos a usar la librería de componentes de React de MercadoPago para poder pagar de manera segura y compliant.
 2. Configuración
     1. [Clonar el repositorio](./configuracion/clonar-aplicacion/README.md): Como clonar el repositorio y correr las aplicaciones iniciales.
     2. [Crear una aplicación en Mercado Pago](./configuracion/crear-aplicacion/README.md): Como entrar al panel de desarrolladores de Mercado Pago y crear una aplicación.
     3. [Cuentas de prueba](./configuracion/cuentas-de-prueba/README.md): Como crear cuentas de prueba y usar tarjetas de prueba.
     4. [Credenciales](./configuracion/credenciales/README.md): Que son y que tipo de credenciales existen, cuando y como usarlas.
-    4. [Exponer un puerto públicamente](./configuracion/exponer-puerto/README.md): Como hacer que Mercado Pago se pueda comunicar con nuestra aplicación mientras corre en local, muy útil para recibir notificaciones de pago y suscripciones durante el desarrollo.
-    5. [Recibir notificaciones de pago y suscripciones](./configuracion/webhook/README.md): Como configurar un webhook en nuestra aplicación para recibir notificaciones de pago y suscripciones.
-    6. [Configurar el MCP de Mercado Pago](./configuracion/mcp/README.md): Como conectar tu agente de IA a Mercado Pago para que cree aplicaciones, cuentas de prueba, credenciales y webhooks por vos. Cada paso que se puede hacer con el MCP tiene un prompt listo para copiar.
+    5. [Exponer un puerto públicamente](./configuracion/exponer-puerto/README.md): Como hacer que Mercado Pago se pueda comunicar con nuestra aplicación mientras corre en local, muy útil para recibir notificaciones de pago y suscripciones durante el desarrollo.
+    6. [Recibir notificaciones de pago y suscripciones](./configuracion/webhook/README.md): Como configurar un webhook en nuestra aplicación para recibir notificaciones de pago y suscripciones.
+    7. [Configurar el MCP de Mercado Pago](./configuracion/mcp/README.md): Como conectar tu agente de IA a Mercado Pago para que cree aplicaciones, cuentas de prueba, credenciales y webhooks por vos. Cada paso que se puede hacer con el MCP tiene un prompt listo para copiar.
 
 ---
 
