@@ -27,7 +27,7 @@ Cuando creás la aplicación, Mercado Pago también crea una cuenta de prueba ve
 
 1. [Revisando nuestra aplicación](#revisando-nuestra-aplicación)
 2. [Crear una preferencia de pago](#crear-una-preferencia-de-pago)
-3. [Recibir notificaciones de pagos](#recibir-notificaciones-de-pagos)
+3. [Recibir notificaciones](#recibir-notificaciones)
 4. [Verificar la autenticidad del pago](#verificar-la-autenticidad-del-pago)
 5. [Listar los mensajes](#listar-los-mensajes)
 6. [Probar la integración](#probar-la-integración)
@@ -58,24 +58,18 @@ export default async function HomePage() {
 
   return (
     <section className="grid gap-8">
-      <form action={add} className="grid gap-2">
-        <textarea
-          className="border-2 border-blue-400 p-2"
-          name="text"
-          placeholder="Hola perro"
-          rows={3}
-        />
-        <button className="rounded bg-blue-400 p-2" type="submit">
-          Enviar
-        </button>
+      <form action={add}>
+        <textarea name="text" placeholder="Hola perro" rows={3} />
+        <button type="submit">Enviar</button>
       </form>
-      <ul className="grid gap-2">
-        {messages.map((message) => (
-          <li key={message.id} className="rounded bg-blue-400/10 p-4">
-            {message.text}
-          </li>
-        ))}
-      </ul>
+      <section className="grid gap-3">
+        <h2>Mensajes</h2>
+        <ul>
+          {messages.map((message) => (
+            <li key={message.id}>{message.text}</li>
+          ))}
+        </ul>
+      </section>
     </section>
   );
 }

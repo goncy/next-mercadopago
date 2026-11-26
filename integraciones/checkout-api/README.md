@@ -76,8 +76,14 @@ Nuestro formulario de pago (`src/app/message-form.tsx`) va a encargarse de captu
 ```tsx
 "use client";
 
-import {initMercadoPago, CardNumber, ExpirationDate, SecurityCode, createCardToken} from "@mercadopago/sdk-react";
-import Form from "next/form"
+import {
+  initMercadoPago,
+  CardNumber,
+  ExpirationDate,
+  SecurityCode,
+  createCardToken,
+} from "@mercadopago/sdk-react";
+import Form from "next/form";
 
 // Inicializamos el SDK
 initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!);
@@ -98,7 +104,7 @@ export default function MessageForm({
     const email = formData.get("email") as string;
 
     // Creamos un token de tarjeta para poder procesar el pago desde el servidor
-    const token = await createCardToken({cardholderName: name})
+    const token = await createCardToken({cardholderName: name});
 
     // Enviamos todos los datos al servidor
     await onSubmitAction(message, {
@@ -112,13 +118,7 @@ export default function MessageForm({
   // Renderizamos el formulario con los campos de pago
   return (
     <Form action={handleSubmit}>
-      <textarea
-        required
-        maxLength={255}
-        name="message"
-        placeholder="Hola perro"
-        rows={3}
-      />
+      <textarea required maxLength={255} name="message" placeholder="Hola perro" rows={3} />
       <CardNumber placeholder="1234 1234 1234 1234" />
       <SecurityCode placeholder="123" />
       <ExpirationDate placeholder="12/2025" />

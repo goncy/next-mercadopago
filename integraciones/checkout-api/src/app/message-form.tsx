@@ -39,7 +39,7 @@ export default function MessageForm({
     });
   }
 
-  // Renderizamos el componente de bricks
+  // Renderizamos el formulario con los campos de pago
   return (
     <Form action={handleSubmit}>
       <textarea required maxLength={255} name="message" placeholder="Hola perro" rows={3} />
