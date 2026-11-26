@@ -14,8 +14,6 @@ Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
 3. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de prueba y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
 ```
 
-Reemplazá también `<tu usuario>`: los nombres de las aplicaciones no se pueden repetir.
-
 Cuando creás la aplicación, Mercado Pago también crea una cuenta de prueba vendedora y una compradora. El MCP no muestra la contraseña de la compradora: la encontrás en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app), en la aplicación, en `Cuentas de prueba`. Pagá con esa cuenta: si en el navegador tenés abierta la sesión de la vendedora, el botón de pagar queda deshabilitado porque no te podés pagar a vos mismo.
 
 > [!NOTE]

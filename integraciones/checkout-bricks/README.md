@@ -5,7 +5,7 @@ En este documento vamos a aprender a agregar pagos a nuestra aplicación utiliza
 Podés preparar todo de dos formas:
 
 - **A mano**: asegurate de haber [clonado el proyecto](../../configuracion/clonar-aplicacion/README.md), [creado una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md) y copiado las [`credenciales de prueba`](../../configuracion/credenciales/README.md) a tu archivo `.env.example` y renombrarlo a `.env.local`.
-- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) con tu cuenta principal y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md). En el prompt, reemplazá `<tu usuario>` por tu usuario: los nombres de las aplicaciones no se pueden repetir.
+- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) con tu cuenta principal y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md).
 
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
@@ -30,6 +30,9 @@ En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) se renderiz
 import MessageForm from "./message-form";
 
 import api from "@/api";
+
+// La página lee una cookie, así que se renderiza en cada visita y no necesita ser instantánea
+export const instant = false;
 
 export default async function HomePage() {
   // Obtenemos los mensajes
@@ -61,7 +64,7 @@ export default async function HomePage() {
 ```
 
 > [!NOTE]
-> Como la lista lee una cookie, la página se renderiza en cada visita. Cuando el Server Action guarda la cookie, Next.js vuelve a renderizar la página y el mensaje nuevo aparece al instante.
+> Como la lista lee una cookie, la página se renderiza en cada visita (`instant = false`). Cuando el Server Action guarda la cookie, Next.js vuelve a renderizar la página y el mensaje nuevo aparece al instante.
 
 ## Crear el formulario de pago
 

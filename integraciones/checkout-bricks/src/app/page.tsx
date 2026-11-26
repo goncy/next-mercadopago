@@ -2,6 +2,9 @@ import api from "@/api";
 
 import MessageForm from "./message-form";
 
+// La página lee una cookie, así que se renderiza en cada visita y no necesita ser instantánea
+export const instant = false;
+
 export default async function HomePage() {
   // Obtenemos los mensajes
   const messages = await api.message.list();
