@@ -1,15 +1,15 @@
 # Integración de Mercado Pago con Checkout API
 
-En este documento vamos a aprender a agregar pagos a nuestra aplicación utilizando Mercado Pago Checkout API. Los usuarios van a poder agregar mensajes a una lista de mensajes pagando por cada mensaje.
+En este documento vamos a aprender a agregar pagos a nuestra aplicación utilizando Mercado Pago Checkout API. Los usuarios van a escribir un mensaje y pagarlo, y la página les va a mostrar su último pago.
 
 Podés preparar todo de dos formas:
 
 - **A mano**: asegurate de haber [clonado el proyecto](../../configuracion/clonar-aplicacion/README.md), [creado una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md) y copiado las [`credenciales de prueba`](../../configuracion/credenciales/README.md) a tu archivo `.env.example` y renombrarlo a `.env.local`.
-- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md).
+- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) con tu cuenta principal y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md).
 
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
-1. Creá una aplicación de Checkout API (con la API de payments) llamada next-mercadopago-checkout-api. Mostrame el resumen antes de crearla.
+1. Creá una aplicación de Checkout API (con la API de payments) llamada <tu usuario>-next-mercadopago-checkout-api. Mostrame el resumen antes de crearla.
 2. Copiá .env.example a .env.local y completá MP_ACCESS_TOKEN y NEXT_PUBLIC_MP_PUBLIC_KEY con las credenciales de prueba. No me muestres las credenciales y no agregues el archivo a git.
 3. Mostrame las tarjetas de prueba de mi país y qué nombre de titular usar para un pago aprobado y uno rechazado.
 ```
@@ -19,26 +19,25 @@ Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
 1. [Revisando nuestra aplicación](#revisando-nuestra-aplicación)
 2. [Crear el formulario de pago](#crear-el-formulario-de-pago)
 3. [Efectivizar el pago](#efectivizar-el-pago)
-4. [Probar la integración](#probar-la-integración)
-5. [Consideraciones](#consideraciones)
+4. [Mostrar el último pago](#mostrar-el-último-pago)
+5. [Probar la integración](#probar-la-integración)
+6. [Consideraciones](#consideraciones)
 
 ## Revisando nuestra aplicación
 
-En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) se renderiza un formulario llamado `MessageForm` que incluye un campo para escribir el mensaje y un formulario con campos de número de tarjeta, fecha de vencimiento y código de seguridad para realizar el pago. Adicionalmente se pide nombre e email los cuales son usados para generar un token de pago para luego efectivizar el pago. Al hacer submit de este formulario, se ejecuta un Server Action que recibe el mensaje y la información del pago y crea el pago con el mensaje en su `metadata`:
+En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) se renderiza un formulario llamado `MessageForm` que incluye un campo para escribir el mensaje y un formulario con campos de número de tarjeta, fecha de vencimiento y código de seguridad para realizar el pago. Adicionalmente se pide nombre e email los cuales son usados para generar un token de pago para luego efectivizar el pago. Al hacer submit de este formulario, se ejecuta un Server Action que recibe el mensaje y la información del pago y crea el pago con el mensaje como referencia:
 
 ```tsx
-import {updateTag} from "next/cache";
+import api from "@/api";
 
 import MessageForm from "./message-form";
 
-import api from "@/api";
-
-// Queremos que esta página sea estática, invalidamos los mensajes cuando agregamos uno nuevo
-export const ensureStatic = "navigation";
+// La página lee una cookie, así que se renderiza en cada visita y no necesita ser instantánea
+export const instant = false;
 
 export default async function HomePage() {
-  // Obtenemos los mensajes
-  const messages = await api.message.list();
+  // Obtenemos el último pago
+  const payment = await api.message.last();
 
   async function add(
     message: string,
@@ -48,28 +47,27 @@ export default async function HomePage() {
 
     // Creamos el pago con el mensaje y los datos del formulario
     await api.message.buy(message, data);
-
-    // Invalidamos los mensajes para ver el nuevo mensaje en la lista
-    updateTag("messages");
   }
 
   return (
     <section className="grid gap-8">
       <MessageForm amount={100} onSubmitAction={add} />
-      <ul>
-        {messages.map((message) => (
-          <li key={message.id}>
-            {message.text}
-          </li>
-        ))}
-      </ul>
+      {payment ? (
+        <article className="grid gap-1 rounded-lg border border-neutral-800 px-4 py-3 text-sm">
+          <h2>Último pago</h2>
+          <p>{payment.external_reference || "<mensaje vacío>"}</p>
+          <p className="text-neutral-400">
+            {payment.status} · ${payment.transaction_amount}
+          </p>
+        </article>
+      ) : null}
     </section>
   );
 }
 ```
 
 > [!NOTE]
-> La página es estática (`ensureStatic = "navigation"` hace que el build falle si algo la vuelve dinámica). `api.message.list` usa `"use cache"` con el tag `messages`, así que cuando creamos un pago invalidamos ese tag con `updateTag` y la lista se actualiza al instante.
+> Como la página lee una cookie, se renderiza en cada visita (`instant = false`). Cuando el Server Action guarda la cookie, Next.js vuelve a renderizar la página y el último pago aparece al instante.
 
 ## Crear el formulario de pago
 
@@ -116,6 +114,7 @@ export default function MessageForm({
     <Form action={handleSubmit}>
       <textarea
         required
+        maxLength={255}
         name="message"
         placeholder="Hola perro"
         rows={3}
@@ -133,17 +132,17 @@ export default function MessageForm({
 
 ## Efectivizar el pago
 
-Dentro de `/src/api.ts`, la función `buy` en `message` se encarga de tomar los datos del formulario y crear un pago en Mercado Pago:
+Dentro de `/src/api.ts`, la función `buy` en `message` se encarga de tomar los datos del formulario y crear un pago en Mercado Pago. Guardamos el mensaje como referencia del pago (`external_reference`, hasta 255 caracteres, por eso el campo tiene `maxLength`) y el id del pago en una cookie para mostrarlo después:
 
 ```ts
 const api = {
   message: {
     async buy(
-      text: Message["text"],
+      text: string,
       data: {amount: number; email: string; installments: number; token: string},
     ) {
       // Creamos el pago con los datos del formulario
-      await new Payment(mercadopago).create({
+      const payment = await new Payment(mercadopago).create({
         body: {
           payer: {
             email: data.email,
@@ -151,11 +150,15 @@ const api = {
           token: data.token,
           transaction_amount: data.amount,
           installments: data.installments,
-          // Guardamos el texto en la metadata y marcamos el pago como mensaje para poder buscarlo después
-          metadata: {text},
-          external_reference: "message",
+          // Guardamos el mensaje como referencia del pago
+          external_reference: text,
         },
       });
+
+      // Guardamos el id del pago en una cookie que solo puede leer el servidor
+      const cookieStore = await cookies();
+
+      cookieStore.set("payment", String(payment.id), {httpOnly: true});
     },
   },
 };
@@ -164,35 +167,36 @@ const api = {
 > [!NOTE]
 > Cuando el usuario hizo submit del formulario, en realidad no pagó, sino que generamos un token de pago para posteriormente (una vez que validemos los datos desde el servidor) podamos efectivizar el pago como hacemos ahora.
 
-## Listar los mensajes
+## Mostrar el último pago
 
-No tenemos una base de datos: Mercado Pago ya guarda cada pago con el texto en su `metadata`. Dentro de `/src/api.ts`, la función `list` en `message` busca los pagos aprobados marcados como mensaje y los devuelve como mensajes:
+No tenemos una base de datos: Mercado Pago ya guarda cada pago con el mensaje como referencia. Dentro de `/src/api.ts`, la función `last` en `message` lee el id del último pago de la cookie y le pide el pago a Mercado Pago. `connection()` le indica a Next.js que esa consulta se hace en cada visita:
 
 ```ts
 const api = {
   message: {
-    async list(): Promise<Message[]> {
-      // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
-      "use cache";
+    async last() {
+      // Leemos de la cookie el id del último pago
+      const cookieStore = await cookies();
+      const id = cookieStore.get("payment")?.value;
 
-      cacheLife("max");
-      cacheTag("messages");
+      // Si todavía no pagamos, no hay nada para mostrar
+      if (!id) return null;
 
-      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`
-      const {results = []} = await new Payment(mercadopago).search({
-        options: {external_reference: "message", status: "approved"},
-      });
+      // Consultamos el pago en cada visita, su estado puede cambiar
+      await connection();
 
-      // Devolvemos los pagos como mensajes
-      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
+      // Mercado Pago es nuestra base de datos: obtenemos el pago
+      return new Payment(mercadopago).get({id});
     },
   },
 };
 ```
 
+Así, si el pago se rechaza también lo vemos, con su estado `rejected`.
+
 ## Probar la integración
 
-Ahora vamos a nuestra aplicación, cargamos un mensaje, llenamos el formulario con los datos que tenemos en `Tarjetas de prueba` en nuestra aplicación de Mercado Pago y presionamos `Pagar`. Después de unos segundos deberíamos ver la página actualizada con nuestro nuevo mensaje.
+Ahora vamos a nuestra aplicación, cargamos un mensaje, llenamos el formulario con los datos que tenemos en `Tarjetas de prueba` en nuestra aplicación de Mercado Pago y presionamos `Pagar`. Después de unos segundos deberíamos ver nuestro mensaje en `Último pago`, con su estado.
 
 ## Consideraciones
 

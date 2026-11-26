@@ -1,36 +1,31 @@
 import {MercadoPagoConfig, Payment} from "mercadopago";
-import {cacheLife, cacheTag} from "next/cache";
-
-interface Message {
-  id: string;
-  text: string;
-}
+import {cookies} from "next/headers";
+import {connection} from "next/server";
 
 export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TOKEN!});
 
 const api = {
   message: {
-    async list(): Promise<Message[]> {
-      // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
-      "use cache";
+    async last() {
+      // Leemos de la cookie el id del último pago
+      const cookieStore = await cookies();
+      const id = cookieStore.get("payment")?.value;
 
-      cacheLife("max");
-      cacheTag("messages");
+      // Si todavía no pagamos, no hay nada para mostrar
+      if (!id) return null;
 
-      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`
-      const {results = []} = await new Payment(mercadopago).search({
-        options: {external_reference: "message", status: "approved"},
-      });
+      // Consultamos el pago en cada visita, su estado puede cambiar
+      await connection();
 
-      // Devolvemos los pagos como mensajes
-      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
+      // Mercado Pago es nuestra base de datos: obtenemos el pago
+      return new Payment(mercadopago).get({id});
     },
     async buy(
-      text: Message["text"],
+      text: string,
       data: {amount: number; email: string; installments: number; token: string},
     ) {
       // Creamos el pago con los datos del brick
-      await new Payment(mercadopago).create({
+      const payment = await new Payment(mercadopago).create({
         body: {
           payer: {
             email: data.email,
@@ -38,11 +33,15 @@ const api = {
           token: data.token,
           transaction_amount: data.amount,
           installments: data.installments,
-          // Guardamos el texto en la metadata y marcamos el pago como mensaje para poder buscarlo después
-          metadata: {text},
-          external_reference: "message",
+          // Guardamos el mensaje como referencia del pago
+          external_reference: text,
         },
       });
+
+      // Guardamos el id del pago en una cookie que solo puede leer el servidor
+      const cookieStore = await cookies();
+
+      cookieStore.set("payment", String(payment.id), {httpOnly: true});
     },
   },
 };
