@@ -10,11 +10,18 @@ Usando el MCP de Mercado Pago, creá una aplicación para pagos online en una in
 
 ## A mano
 
-Vamos a ir a [Mercado Pago Developers](https://www.mercadopago.com.ar/developers/panel/app) y creamos una nueva aplicación.
+Vamos a ir a [Mercado Pago Developers](https://www.mercadopago.com.ar/developers/panel/app) y tocamos `Crear aplicación`.
 
 ![image](./screenshots/crear-aplicacion.jpg)
 
-Una vez dentro, cargamos todos los datos de nuestra aplicación. En "¿Qué producto estás integrando?" vas a elegir el que quieras integrar.
+Elegimos `Crear en el panel de integración`.
+
+![image](./screenshots/crear-opciones.jpg)
+
+En "Elegí una solución para integrar" vas a elegir la que quieras integrar (Checkout Bricks está dentro de `Checkout API`). Después, en `Otros datos`, le ponemos un nombre a la aplicación, aceptamos los términos y tocamos `Crear aplicación`.
+
+> [!NOTE]
+> En Checkout Pro te va a preguntar el `Tipo de API`. Elegí `API de Preferences`, que es la que usa este repositorio, aunque el panel avise que va a ser descontinuada.
 
 ![image](./screenshots/app-form.jpg)
 
