@@ -15,12 +15,9 @@ Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
 4. Con mercadopago-mcp-vendedor, configurá el webhook en <URL pública>/api/mercadopago para los eventos de Planes y suscripciones, en la aplicación de la vendedora de prueba cuyas credenciales usaste en el paso 3. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
 ```
 
-El webhook se configura con `mercadopago-mcp-vendedor` porque las credenciales de prueba son de la aplicación de la vendedora de prueba: con tu cuenta principal, el MCP no puede modificarla. El usuario y la contraseña de la vendedora y de la compradora están en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app), en la aplicación, en `Cuentas de prueba`.
+El usuario y la contraseña de la vendedora y de la compradora están en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app), en la aplicación, en `Cuentas de prueba`.
 
-> [!IMPORTANT]
-> Para suscribirte usá el email de la cuenta compradora de prueba: `test_user_<número>@testuser.com`, donde `<número>` es el de su usuario `TESTUSER<número>`. Con cualquier otro email, Mercado Pago responde `Both payer and collector must be real or test users`. Pagá con la sesión de la compradora, no con la de la vendedora.
-
-## Indice
+## Índice
 
 1. [Revisando nuestra aplicación](#revisando-nuestra-aplicación)
 2. [Crear una suscripción](#crear-una-suscripción)
@@ -189,12 +186,12 @@ En una aplicación real deberíamos verificar la concordancia de la clave secret
 
 ## Probar la integración
 
-Ahora vamos a iniciar sesión con nuestra cuenta de prueba comprador, vamos a ir a la página de inicio de nuestra aplicación y en el formulario de suscripción, vamos a escribir el email de nuestro usuario de la cuenta de prueba comprador de Mercado Pago (podés obtener este email entrando a [este link](https://www.mercadopago.com.ar/hub-engine/hubs/my-profile) desde el navegador donde estás logeado con esa cuenta). Eso nos va a redirigir a Mercado Pago. Completemos el pago y deberíamos ver algo como esto:
+Ahora vamos a iniciar sesión con nuestra cuenta de prueba comprador, vamos a ir a la página de inicio de nuestra aplicación y en el formulario de suscripción, vamos a escribir el email de nuestro usuario de la cuenta de prueba comprador de Mercado Pago: `test_user_<número>@testuser.com`, donde `<número>` es el de su usuario `TESTUSER<número>`. Eso nos va a redirigir a Mercado Pago. Completemos el pago y deberíamos ver algo como esto:
 
 ![image](./screenshots/suscripcion-aprobada.jpg)
 
 > [!IMPORTANT]
-> Es importante que uses el mail de la cuenta de prueba comprador de Mercado Pago, ya que si usas otro mail, posiblemente obtengas un error (poco descriptivo) y no puedas suscribirte.
+> Es importante que uses el mail de la cuenta de prueba comprador de Mercado Pago. Con cualquier otro mail, Mercado Pago responde `Both payer and collector must be real or test users` y no vas a poder suscribirte.
 
 Excelente, nuestra suscripción fue aprobada, la notificación fue recibida y si refrescamos la página deberíamos ver el contenido exclusivo ✨.
 

@@ -6,26 +6,21 @@ Un caso de uso para esta implementación sería una plataforma como [Cafecito](h
 
 La implementación de esta funcionalidad es muy similar a la integracion con Checkout Pro, así que para poder seguir, primero completá todos los pasos de la [Integración de Mercado Pago con Checkout Pro](../checkout-pro/README.md).
 
-Las dos primeras secciones ([la cuenta de prueba extra](#crear-una-cuenta-de-prueba-extra-para-marketplace) y [la URL de redirección](#configurando-la-url-de-redirección)) las podés hacer de dos formas:
+Podés preparar todo de dos formas:
 
-- **A mano**: siguiendo los pasos de abajo.
+- **A mano**: siguiendo todos los pasos de abajo.
 - **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) con los dos servidores, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md), [exponé el puerto 3000](../../configuracion/exponer-puerto/README.md) y copiá este prompt en tu agente. En el prompt, reemplazá `<URL pública>` por esa URL.
 
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
-1. Con mercadopago-mcp-vendedor, creá una aplicación de Checkout Pro llamada <tu usuario>-next-mercadopago-marketplace con la URL de redirección <URL pública>/api/mercadopago/connect. Mostrame el resumen antes de crearla. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
-2. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de producción de esa aplicación, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET con su Client ID y su Client Secret, y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
-3. Con mercadopago-mcp-principal, cargale 10000 de saldo a la cuenta de prueba compradora y mostrame su usuario.
+1. Con mercadopago-mcp-principal, asegurate de tener una cuenta de prueba vendedora y una compradora (creálas si no existen), cargale 10000 de saldo a la compradora y mostrame su usuario.
+2. Con mercadopago-mcp-vendedor, creá una aplicación de Checkout Pro llamada <tu usuario>-next-mercadopago-marketplace con la URL de redirección <URL pública>/api/mercadopago/connect. Mostrame el resumen antes de crearla. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
+3. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de producción de esa aplicación, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET con su Client ID y su Client Secret, y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
 ```
 
-La cuenta vendedora de prueba hace de Marketplace: es la dueña de la aplicación, y sus credenciales de producción son credenciales de prueba porque la cuenta es de prueba. Hay dos pasos que el MCP no puede hacer y tenés que hacer en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app):
+La cuenta vendedora de prueba hace de Marketplace: es la dueña de la aplicación. El MCP no puede configurar la URL de redirección ni crear una segunda cuenta vendedora, así que [crear la cuenta del creador de contenido](#crear-una-cuenta-de-prueba-extra-para-marketplace) y [configurar la URL de redirección](#configurando-la-url-de-redirección) los hacés a mano en el panel, también si usaste el MCP. Después seguí desde [Revisando nuestra aplicación](#revisando-nuestra-aplicación).
 
-1. **Configurar la URL de redirección**: el MCP crea la aplicación con una URL de redirección por defecto. Entrá al panel con la cuenta vendedora de prueba y seguí los pasos de [Configurando la URL de redirección](#configurando-la-url-de-redirección).
-2. **Crear el creador de contenido**: el MCP no puede crear otra cuenta vendedora. Entrá al panel con tu cuenta principal, andá a `Cuentas de prueba` en cualquier aplicación y creá una cuenta vendedora llamada `Creador de contenido`. Guardá su usuario y su contraseña.
-
-Para probar la integración vas a usar tres sesiones distintas: el creador de contenido para conectar su cuenta, la compradora para pagar y la vendedora de prueba (Marketplace) solo para el panel. Si en el navegador tenés abierta otra sesión, cerrala antes de conectar o de pagar.
-
-Si usaste el MCP, salteá hasta [Revisando nuestra aplicación](#revisando-nuestra-aplicación) después de hacer esos dos pasos.
+Para probar vas a usar tres sesiones distintas: el creador de contenido para conectar su cuenta, la compradora para pagar y la vendedora de prueba (Marketplace) solo para el panel. Si en el navegador tenés abierta otra sesión, cerrala antes de conectar o de pagar.
 
 ## Índice
 
@@ -211,7 +206,7 @@ const api = {
 
 ## Crear una preferencia de pago en nombre del creador de contenido
 
-Dentro de `/src/api.ts`, la función `submit` en `message` se encarga de crear una preferencia de pago y devolver el init point (url de pago). Pero no vamos a usar nuestro cliente de Mercado Pago como veníamos haciendo antes, sino que vamos a crear un nuevo cliente usando el access token del Marketplace. Entonces, cuando creemos esa preferencia, el pago va a ir para el creador de contenido, pero va a retener un valor fijo (el definido en `marketplace_fee`) como comisión para el usuario Marketplace:
+Dentro de `/src/api.ts`, la función `submit` en `message` se encarga de crear una preferencia de pago y devolver el init point (url de pago). Pero no vamos a usar nuestro cliente de Mercado Pago como veníamos haciendo antes, sino que vamos a crear un nuevo cliente usando el access token del creador de contenido. Entonces, cuando creemos esa preferencia, el pago va a ir para el creador de contenido, pero va a retener un valor fijo (el definido en `marketplace_fee`) como comisión para el usuario Marketplace:
 
 ```ts
 const api = {

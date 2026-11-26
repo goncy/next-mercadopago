@@ -19,7 +19,7 @@ Vas a configurar el MCP dos veces, con la misma URL y una cuenta distinta en cad
 - `mercadopago-mcp-principal`, con **tu cuenta principal**: crea las aplicaciones productivas, interactúa con tus cuentas de prueba (por ejemplo, para cargarle saldo a la compradora) y completa las credenciales de prueba en tu proyecto. Lo usan todas las integraciones.
 - `mercadopago-mcp-vendedor`, con **tu cuenta vendedora de prueba**: crea y configura las aplicaciones del entorno de prueba, como sus webhooks. Solo lo usan las integraciones que lo traen en su `.mcp.json`.
 
-Cada MCP solo puede modificar las aplicaciones de la cuenta con la que lo autorizaste. Las credenciales de prueba de tu proyecto son de una aplicación de la vendedora, así que todo lo que se configura en esa aplicación pasa por `mercadopago-mcp-vendedor`.
+Cada MCP solo puede modificar las aplicaciones de la cuenta con la que lo autorizaste. En Checkout Pro y Suscripciones, las credenciales de prueba que trae el MCP son de una aplicación de la vendedora, así que todo lo que se configura en esa aplicación pasa por `mercadopago-mcp-vendedor`.
 
 La cuenta compradora no necesita un MCP: solo la usás para pagar en el navegador.
 
@@ -52,7 +52,7 @@ Si tu agente no lee `.mcp.json`, agregá esta configuración en el archivo de se
 
 ## Autorizar la cuenta vendedora de prueba
 
-La cuenta vendedora de prueba existe recién cuando creaste tu primera aplicación con el MCP, así que hacé este paso cuando el prompt de la integración te lo pida.
+Hacé este paso cuando el prompt de la integración te lo pida: para ese momento la cuenta vendedora de prueba ya existe.
 
 1. Entrá al [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app) con tu cuenta principal, abrí la aplicación y andá a `Cuentas de prueba`. Copiá el usuario y la contraseña de la cuenta vendedora.
 2. Abrí una ventana de incógnito, así no se mezcla con tu sesión principal.
