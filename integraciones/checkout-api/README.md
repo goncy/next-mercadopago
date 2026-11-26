@@ -55,11 +55,12 @@ export default async function HomePage() {
       {payment ? (
         <section className="grid gap-3">
           <h2>Último pago</h2>
-          <ul>
-            <li>Mensaje: {payment.text}</li>
-            <li>Estado: {payment.status}</li>
-            <li>Monto: ${payment.amount}</li>
-          </ul>
+          <article className="grid gap-1 rounded-lg border border-neutral-800 px-4 py-3 text-sm">
+            <p>{payment.text || "<mensaje vacío>"}</p>
+            <p className="text-neutral-400">
+              {payment.status} · ${payment.amount}
+            </p>
+          </article>
         </section>
       ) : null}
     </section>
@@ -191,7 +192,7 @@ const api = {
 
       return {
         id: payment.id!,
-        text: payment.external_reference!,
+        text: payment.external_reference ?? "",
         status: payment.status!,
         amount: payment.transaction_amount!,
       };

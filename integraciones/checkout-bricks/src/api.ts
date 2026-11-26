@@ -29,7 +29,7 @@ const api = {
 
       return {
         id: payment.id!,
-        text: payment.external_reference!,
+        text: payment.external_reference ?? "",
         status: payment.status!,
         amount: payment.transaction_amount!,
       };
