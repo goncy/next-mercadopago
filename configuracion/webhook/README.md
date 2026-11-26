@@ -20,11 +20,11 @@ Vamos a ir a [Mercado Pago](https://www.mercadopago.com.ar/developers/panel/app)
 
 ![image](./screenshots/config.jpg)
 
-Seleccioná el entorno del cual quieras recibir notificaciones (recordá que si estás en una cuenta de prueba, posiblemente quieras seleccionar `Modo productivo`) y en la URL de producción, pegamos la URL que tenemos en `APP_URL` dentro de nuestro archivo `.env.local` (la que obtuvimos cuando expusimos nuestro puerto local más arriba) y le agregamos el endpoint al que queremos que nos llegen las notificaciones. Por ejemplo, en este tutorial, las notificaciones las recibo en `/api/mercadopago`. Seleccionamos los eventos que queremos recibir y le damos a `Guardar configuración`:
+Seleccioná el entorno del cual quieras recibir notificaciones (recordá que si estás en una cuenta de prueba, posiblemente quieras seleccionar `Modo productivo`) y en la URL de ese entorno, pegamos la URL que tenemos en `APP_URL` dentro de nuestro archivo `.env.local` (la que obtuvimos cuando expusimos nuestro puerto local más arriba) y le agregamos el endpoint al que queremos que nos llegen las notificaciones. Por ejemplo, en este tutorial, las notificaciones las recibo en `/api/mercadopago`. Seleccionamos los eventos que queremos recibir y le damos a `Guardar configuración`:
 
 ![image](./screenshots/save-config.jpg)
 
-Si vamos a `Simular notificación` y emitimos una notificación, deberíamos ver un mensaje similar a este indicando de que hubo un error (ya que el pago no existe) y también deberíamos ver un log en la terminal de nuestro equipo local incluyendo información sobre la notificación.
+Si vamos a `Simular notificación`, elegimos el tipo de evento y tocamos `Enviar prueba`, deberíamos ver un mensaje similar a este indicando de que hubo un error (ya que el pago no existe) y también deberíamos ver un log en la terminal de nuestro equipo local incluyendo información sobre la notificación.
 
 ![image](./screenshots/test-webhook.jpg)
 

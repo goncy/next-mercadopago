@@ -23,14 +23,19 @@ Luego de haber [creado una aplicación](../crear-aplicacion/README.md) vamos a a
 
 ![image](./screenshots/crear-cuentas.jpg)
 
-Vamos a darle un nombre, un país y un monto inicial de crédito a la cuenta.
+Al crear la aplicación, Mercado Pago ya crea solo una cuenta vendedora (`Seller Test User`) y una compradora (`Buyer Test User`), así que puede que no necesites crear ninguna.
+
+Si necesitás otra, le vamos a dar un país, un nombre, un tipo de cuenta (`Comprador`, `Vendedor` o `Marketplace`) y un monto inicial de crédito.
+
+> [!NOTE]
+> Podés tener hasta 15 cuentas de prueba y no se pueden borrar. Si llegaste al límite, reutilizá una: desde su menú (`⋮`) podés cambiarle el nombre y el tipo en `Editar datos`.
 
 > [!TIP]
 > Generalmente vas a necesitar al menos dos cuentas de prueba: una para el `Vendedor` y otra para el `Comprador`. En algunos casos, como el de `Marketplace`, vas a necesitar una tercer cuenta para representar al `Intermediario` que no es ni comprador ni vendedor.
 
 ![image](./screenshots/form-cuenta.jpg)
 
-Luego abrimos una ventana de incógnito (u otro perfil del navegador) y nos logueamos con la cuenta de prueba para asegurarnos de que la creamos correctamente.
+Luego abrimos una ventana de incógnito (u otro perfil del navegador) y nos logueamos con la cuenta de prueba para asegurarnos de que la creamos correctamente. Si te pide un código por e-mail, usá el `Código de verificación` que aparece en la cuenta.
 
 ![image](./screenshots/login-prueba.jpg)
 
@@ -46,7 +51,7 @@ Usando el MCP de Mercado Pago, mostrame las tarjetas de prueba de mi país y qu�
 
 ### A mano
 
-La mayoría de las veces vamos a poder pagar con dinero en cuenta, pero si quisieramos hacer pagos de prueba con tarjetas, una vez que iniciamos sesión con nuestra cuenta de pruebas, entramos a [alguna de sus aplicaciones](https://www.mercadopago.com.ar/developers/panel/app/) (o creamos una aplicación si no la tenemos) y nos vamos a `Tarjetas de prueba`.
+La mayoría de las veces vamos a poder pagar con dinero en cuenta, pero si quisieramos hacer pagos de prueba con tarjetas, entramos a [nuestra aplicación](https://www.mercadopago.com.ar/developers/panel/app/) y nos vamos a `Tarjetas de prueba`.
 
 ![image](./screenshots/tarjetas.jpg)
 

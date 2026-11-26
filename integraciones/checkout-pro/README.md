@@ -4,7 +4,7 @@ En este documento vamos a aprender a agregar pagos a nuestra aplicación utiliza
 
 Podés preparar todo de dos formas:
 
-- **A mano**: asegurate de haber [clonado el proyecto](../../configuracion/clonar-aplicacion/README.md), [creado una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md) (para producción), haber creado dos [cuentas de prueba](../../configuracion/cuentas-de-prueba/README.md) para Comprador y Vendedor, haber iniciado sesión en otro navegador con la cuenta de prueba de Vendedor y [crear una aplicación en Mercado Pago](../../configuracion/crear-aplicacion/README.md) (para desarrollo), haber [copiado las credenciales](../../configuracion/credenciales/README.md) de producción de la aplicación del Vendedor a tu archivo `.env.example` y renombrarlo a `.env.local`, haber [expuesto el puerto 3000 al exterior](../../configuracion/exponer-puerto/README.md).
+- **A mano**: asegurate de haber [clonado el proyecto](../../configuracion/clonar-aplicacion/README.md), [creado una aplicación de Checkout Pro en Mercado Pago](../../configuracion/crear-aplicacion/README.md), haber [copiado las credenciales de prueba](../../configuracion/credenciales/README.md) a tu archivo `.env.example` y renombrarlo a `.env.local` y haber [expuesto el puerto 3000 al exterior](../../configuracion/exponer-puerto/README.md). Para pagar vas a usar la [cuenta de prueba](../../configuracion/cuentas-de-prueba/README.md) compradora que Mercado Pago crea junto con la aplicación.
 - **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) con tu cuenta principal y copiá este prompt en tu agente. Antes, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md) y [exponé el puerto 3000](../../configuracion/exponer-puerto/README.md): en el prompt, reemplazá `<URL pública>` por esa URL.
 
 ```text
@@ -197,7 +197,7 @@ En una aplicación real deberíamos verificar la concordancia de la clave secret
 
 ## Probar la integración
 
-Ahora vamos a intentar de hacer el flujo completo de agregar un mensaje a nuestra lista de mensajes y veamos si funciona.
+Ahora vamos a intentar de hacer el flujo completo de agregar un mensaje a nuestra lista de mensajes y veamos si funciona. Iniciá sesión con la cuenta compradora de prueba, agregá un mensaje y pagá con el dinero disponible. Cuando el pago se aprueba, Mercado Pago nos devuelve solo a la aplicación.
 
 ![image](./screenshots/pago-aprobado.jpg)
 

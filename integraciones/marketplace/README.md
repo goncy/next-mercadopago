@@ -14,7 +14,7 @@ Podés preparar todo de dos formas:
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
 1. Con mercadopago-mcp-principal, asegurate de tener una cuenta de prueba vendedora y una compradora (creálas si no existen), cargale 10000 de saldo a la compradora y mostrame su usuario.
-2. Con mercadopago-mcp-vendedor, creá una aplicación de Checkout Pro llamada <tu usuario>-next-mercadopago-marketplace con la URL de redirección <URL pública>/api/mercadopago/connect. Mostrame el resumen antes de crearla. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
+2. Con mercadopago-mcp-vendedor, creá una aplicación de Checkout Pro llamada <tu usuario>-next-marketplace con la URL de redirección <URL pública>/api/mercadopago/connect. Mostrame el resumen antes de crearla. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
 3. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de producción de esa aplicación, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET con su Client ID y su Client Secret, y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
 ```
 
@@ -36,23 +36,24 @@ Para probar vas a usar tres sesiones distintas: el creador de contenido para con
 
 ## Crear una cuenta de prueba extra para Marketplace
 
-Como en este proceso hay 3 partes (Comprador, Vendedor y Marketplace), crear una cuenta de prueba más. Ya teníamos la de Comprador y Vendedor, vamos a crear una cuenta nueva llamada `Creador de contenido` y renombremos la de `Vendedor` como `Marketplace`.
+Como en este proceso hay 3 partes (Comprador, Vendedor y Marketplace), necesitamos una cuenta de prueba más. Ya teníamos la vendedora (`Seller Test User`), que hace de Marketplace porque es la dueña de la aplicación, y la compradora (`Buyer Test User`). Desde tu cuenta principal, en `Cuentas de prueba`, creá una cuenta nueva de tipo `Vendedor` llamada `Creador de contenido`.
 
 ![image](./screenshots/cuentas-de-prueba.jpg)
-
-No es estrictamente necesario renombrar la cuenta, pero como ya tenemos la aplicación creada y configurada en la cuenta de Vendedor, es más claro tener los roles diferenciados.
 
 ## Configurando la URL de redirección
 
 En este proceso vamos a hacer que el usario "Creador de contenido" autorice al usuario "Marketplace" a crear preferencias de pago en su nombre. Esto se hace mediante OAuth, donde luego de que el usuario "Creador de contenido" autorice la integración, se lo redirigirá a una URL de nuestra aplicación, la cual debemos configurar en Mercado Pago.
 
-En Mercado Pago, dentro del panel de administración de nuestra aplicación en nuestra cuenta de `Marketplace`, vamos al link que dice `editar`.
+En Mercado Pago, dentro del panel de administración de nuestra aplicación en nuestra cuenta de `Marketplace`, vamos a `Configuración de la aplicación` en el menú izquierdo.
 
-![image](./screenshots/editar-link.jpg)
+![image](./screenshots/configuracion-app.jpg)
 
-Nos vamos a desplazar hacia abajo y en `URLs de redireccionamiento` vamos a agregar la URL de nuestra aplicación (la que tenemos en `APP_URL` en nuestro archivo `.env.local`) y le agregamos `/api/mercadopago/connect` al final. Vamos a ver que hace esa ruta más adelante.
+Abrimos `Configuración avanzada` y en la URL de redireccionamiento vamos a poner la URL de nuestra aplicación (la que tenemos en `APP_URL` en nuestro archivo `.env.local`) y le agregamos `/api/mercadopago/connect` al final. Vamos a ver que hace esa ruta más adelante. Marcamos el captcha y tocamos `Guardar cambios`.
 
 ![image](./screenshots/url-redireccion.jpg)
+
+> [!NOTE]
+> Si no se guarda, revisá los errores en `Datos básicos`: el panel no acepta nombres que se parecen a una marca registrada (como los que incluyen `mercadopago`) y pide una descripción.
 
 ## Revisando nuestra aplicación
 
@@ -143,7 +144,7 @@ Si vamos a nuestra aplicación, vamos a ver un botón que dice `Conectar Mercado
 
 ![image](./screenshots/pantalla-autorizacion.jpg)
 
-Vamos a continuar, aceptar y vamos a ser redirigidos a nuestra aplicación, donde vamos a ver el formulario para agregar un mensaje.
+Tocamos `Autorizar` y vamos a ser redirigidos a nuestra aplicación, donde vamos a ver el formulario para agregar un mensaje.
 
 ## Guardar el access token autorizado
 
