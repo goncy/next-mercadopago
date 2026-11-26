@@ -1,8 +1,9 @@
 import {MercadoPagoConfig, Payment} from "mercadopago";
-import {cacheLife, cacheTag} from "next/cache";
+import {cacheLife} from "next/cache";
+import {cookies} from "next/headers";
 
 interface Message {
-  id: string;
+  id: number;
   text: string;
 }
 
@@ -11,26 +12,30 @@ export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_AC
 const api = {
   message: {
     async list(): Promise<Message[]> {
-      // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
+      // Leemos de la cookie los ids de los pagos aprobados
+      const cookieStore = await cookies();
+      const ids: number[] = JSON.parse(cookieStore.get("messages")?.value ?? "[]");
+
+      // Obtenemos el mensaje de cada pago
+      return Promise.all(ids.map((id) => api.message.get(id)));
+    },
+    async get(id: Message["id"]): Promise<Message> {
+      // Cacheamos el mensaje, un pago aprobado no cambia
       "use cache";
 
       cacheLife("max");
-      cacheTag("messages");
 
-      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`
-      const {results = []} = await new Payment(mercadopago).search({
-        options: {external_reference: "message", status: "approved"},
-      });
+      // Mercado Pago es nuestra base de datos: obtenemos el pago y devolvemos el texto de su `metadata`
+      const payment = await new Payment(mercadopago).get({id});
 
-      // Devolvemos los pagos como mensajes
-      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
+      return {id: payment.id!, text: payment.metadata.text};
     },
     async buy(
       text: Message["text"],
       data: {amount: number; email: string; installments: number; token: string},
     ) {
       // Creamos el pago con los datos del formulario
-      await new Payment(mercadopago).create({
+      const payment = await new Payment(mercadopago).create({
         body: {
           payer: {
             email: data.email,
@@ -38,11 +43,19 @@ const api = {
           token: data.token,
           transaction_amount: data.amount,
           installments: data.installments,
-          // Guardamos el texto en la metadata y marcamos el pago como mensaje para poder buscarlo después
+          // Guardamos el texto en la metadata para mostrarlo después
           metadata: {text},
-          external_reference: "message",
         },
       });
+
+      // Si el pago no se aprobó, no guardamos el mensaje
+      if (payment.status !== "approved") return;
+
+      // Guardamos el id del pago en una cookie que solo puede leer el servidor
+      const cookieStore = await cookies();
+      const ids: number[] = JSON.parse(cookieStore.get("messages")?.value ?? "[]");
+
+      cookieStore.set("messages", JSON.stringify([...ids, payment.id]), {httpOnly: true});
     },
   },
 };

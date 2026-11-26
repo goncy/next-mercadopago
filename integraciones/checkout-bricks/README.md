@@ -27,14 +27,9 @@ Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
 En la página de inicio de nuestra aplicación (`/src/app/page.tsx`) se renderiza un formulario llamado `MessageForm` que incluye un campo para escribir el mensaje y un formulario de Mercado Pago para realizar el pago. Al hacer submit de este formulario, se ejecuta un Server Action que recibe el mensaje y la información del pago y crea el pago con el mensaje en su `metadata`:
 
 ```tsx
-import {updateTag} from "next/cache";
-
 import MessageForm from "./message-form";
 
 import api from "@/api";
-
-// Queremos que esta página sea estática, invalidamos los mensajes cuando agregamos uno nuevo
-export const ensureStatic = "navigation";
 
 export default async function HomePage() {
   // Obtenemos los mensajes
@@ -48,9 +43,6 @@ export default async function HomePage() {
 
     // Creamos el pago con el mensaje y los datos del brick
     await api.message.buy(message, data);
-
-    // Invalidamos los mensajes para ver el nuevo mensaje en la lista
-    updateTag("messages");
   }
 
   return (
@@ -69,7 +61,7 @@ export default async function HomePage() {
 ```
 
 > [!NOTE]
-> La página es estática (`ensureStatic = "navigation"` hace que el build falle si algo la vuelve dinámica). `api.message.list` usa `"use cache"` con el tag `messages`, así que cuando creamos un pago invalidamos ese tag con `updateTag` y la lista se actualiza al instante.
+> Como la lista lee una cookie, la página se renderiza en cada visita. Cuando el Server Action guarda la cookie, Next.js vuelve a renderizar la página y el mensaje nuevo aparece al instante.
 
 ## Crear el formulario de pago
 
@@ -144,7 +136,7 @@ export default function MessageForm({
 
 ## Efectivizar el pago
 
-Dentro de `/src/api.ts`, la función `buy` en `message` se encarga de tomar los datos del formulario y crear un pago en Mercado Pago:
+Dentro de `/src/api.ts`, la función `buy` en `message` se encarga de tomar los datos del formulario y crear un pago en Mercado Pago. Si el pago se aprueba, guardamos su id en una cookie para mostrar el mensaje en la lista:
 
 ```ts
 const api = {
@@ -154,7 +146,7 @@ const api = {
       data: {amount: number; email: string; installments: number; token: string},
     ) {
       // Creamos el pago con los datos del brick
-      await new Payment(mercadopago).create({
+      const payment = await new Payment(mercadopago).create({
         body: {
           payer: {
             email: data.email,
@@ -162,11 +154,19 @@ const api = {
           token: data.token,
           transaction_amount: data.amount,
           installments: data.installments,
-          // Guardamos el texto en la metadata y marcamos el pago como mensaje para poder buscarlo después
+          // Guardamos el texto en la metadata para mostrarlo después
           metadata: {text},
-          external_reference: "message",
         },
       });
+
+      // Si el pago no se aprobó, no guardamos el mensaje
+      if (payment.status !== "approved") return;
+
+      // Guardamos el id del pago en una cookie que solo puede leer el servidor
+      const cookieStore = await cookies();
+      const ids: number[] = JSON.parse(cookieStore.get("messages")?.value ?? "[]");
+
+      cookieStore.set("messages", JSON.stringify([...ids, payment.id]), {httpOnly: true});
     },
   },
 };
@@ -177,29 +177,35 @@ const api = {
 
 ## Listar los mensajes
 
-No tenemos una base de datos: Mercado Pago ya guarda cada pago con el texto en su `metadata`. Dentro de `/src/api.ts`, la función `list` en `message` busca los pagos aprobados marcados como mensaje y los devuelve como mensajes:
+No tenemos una base de datos: Mercado Pago ya guarda cada pago con el texto en su `metadata`. Dentro de `/src/api.ts`, la función `list` en `message` lee de la cookie los ids de los pagos aprobados, y `get` obtiene cada pago y devuelve su texto:
 
 ```ts
 const api = {
   message: {
     async list(): Promise<Message[]> {
-      // Cacheamos los mensajes hasta que los invalidemos con el tag "messages"
+      // Leemos de la cookie los ids de los pagos aprobados
+      const cookieStore = await cookies();
+      const ids: number[] = JSON.parse(cookieStore.get("messages")?.value ?? "[]");
+
+      // Obtenemos el mensaje de cada pago
+      return Promise.all(ids.map((id) => api.message.get(id)));
+    },
+    async get(id: Message["id"]): Promise<Message> {
+      // Cacheamos el mensaje, un pago aprobado no cambia
       "use cache";
 
       cacheLife("max");
-      cacheTag("messages");
 
-      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`
-      const {results = []} = await new Payment(mercadopago).search({
-        options: {external_reference: "message", status: "approved"},
-      });
+      // Mercado Pago es nuestra base de datos: obtenemos el pago y devolvemos el texto de su `metadata`
+      const payment = await new Payment(mercadopago).get({id});
 
-      // Devolvemos los pagos como mensajes
-      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
+      return {id: payment.id!, text: payment.metadata.text};
     },
   },
 };
 ```
+
+Como guardamos los ids en una cookie, cada visitante ve los mensajes que pagó desde su navegador.
 
 ## Probar la integración
 

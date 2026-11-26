@@ -1,11 +1,6 @@
-import {updateTag} from "next/cache";
-
 import api from "@/api";
 
 import MessageForm from "./message-form";
-
-// Queremos que esta página sea estática, invalidamos los mensajes cuando agregamos uno nuevo
-export const ensureStatic = "navigation";
 
 export default async function HomePage() {
   // Obtenemos los mensajes
@@ -19,9 +14,6 @@ export default async function HomePage() {
 
     // Creamos el pago con el mensaje y los datos del brick
     await api.message.buy(message, data);
-
-    // Invalidamos los mensajes para ver el nuevo mensaje en la lista
-    updateTag("messages");
   }
 
   return (
