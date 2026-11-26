@@ -48,7 +48,7 @@ export default function MessageForm({
   // Renderizamos el componente de bricks
   return (
     <form ref={formRef}>
-      <textarea required name="message" placeholder="Hola perro" rows={3} />
+      <textarea required maxLength={255} name="message" placeholder="Hola perro" rows={3} />
       <CardPayment
         customization={{
           paymentMethods: {maxInstallments: 1, minInstallments: 1},

@@ -42,7 +42,7 @@ export default function MessageForm({
   // Renderizamos el componente de bricks
   return (
     <Form action={handleSubmit}>
-      <textarea required name="message" placeholder="Hola perro" rows={3} />
+      <textarea required maxLength={255} name="message" placeholder="Hola perro" rows={3} />
       <CardNumber placeholder="1234 1234 1234 1234" />
       <SecurityCode placeholder="123" />
       <ExpirationDate placeholder="12/2025" />

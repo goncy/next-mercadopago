@@ -6,8 +6,8 @@ import MessageForm from "./message-form";
 export const instant = false;
 
 export default async function HomePage() {
-  // Obtenemos los mensajes
-  const messages = await api.message.list();
+  // Obtenemos el último pago
+  const payment = await api.message.last();
 
   async function add(
     message: string,
@@ -22,14 +22,16 @@ export default async function HomePage() {
   return (
     <section className="grid gap-8">
       <MessageForm amount={100} onSubmitAction={add} />
-      <section className="grid gap-3">
-        <h2>Mensajes</h2>
-        <ul>
-          {messages.map((message) => (
-            <li key={message.id}>{message.text}</li>
-          ))}
-        </ul>
-      </section>
+      {payment ? (
+        <section className="grid gap-3">
+          <h2>Último pago</h2>
+          <ul>
+            <li>Mensaje: {payment.text}</li>
+            <li>Estado: {payment.status}</li>
+            <li>Monto: ${payment.amount}</li>
+          </ul>
+        </section>
+      ) : null}
     </section>
   );
 }

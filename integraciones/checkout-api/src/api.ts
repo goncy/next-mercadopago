@@ -1,34 +1,38 @@
 import {MercadoPagoConfig, Payment} from "mercadopago";
-import {cacheLife} from "next/cache";
 import {cookies} from "next/headers";
+import {connection} from "next/server";
 
 interface Message {
   id: number;
   text: string;
+  status: string;
+  amount: number;
 }
 
 export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TOKEN!});
 
 const api = {
   message: {
-    async list(): Promise<Message[]> {
-      // Leemos de la cookie los ids de los pagos aprobados
+    async last(): Promise<Message | null> {
+      // Leemos de la cookie el id del último pago
       const cookieStore = await cookies();
-      const ids: number[] = JSON.parse(cookieStore.get("messages")?.value ?? "[]");
+      const id = cookieStore.get("payment")?.value;
 
-      // Obtenemos el mensaje de cada pago
-      return Promise.all(ids.map((id) => api.message.get(id)));
-    },
-    async get(id: Message["id"]): Promise<Message> {
-      // Cacheamos el mensaje, un pago aprobado no cambia
-      "use cache";
+      // Si todavía no pagamos, no hay mensaje
+      if (!id) return null;
 
-      cacheLife("max");
+      // Consultamos el pago en cada visita, su estado puede cambiar
+      await connection();
 
-      // Mercado Pago es nuestra base de datos: obtenemos el pago y devolvemos el texto de su `metadata`
+      // Mercado Pago es nuestra base de datos: obtenemos el pago y el mensaje de su referencia
       const payment = await new Payment(mercadopago).get({id});
 
-      return {id: payment.id!, text: payment.metadata.text};
+      return {
+        id: payment.id!,
+        text: payment.external_reference!,
+        status: payment.status!,
+        amount: payment.transaction_amount!,
+      };
     },
     async buy(
       text: Message["text"],
@@ -43,19 +47,15 @@ const api = {
           token: data.token,
           transaction_amount: data.amount,
           installments: data.installments,
-          // Guardamos el texto en la metadata para mostrarlo después
-          metadata: {text},
+          // Guardamos el mensaje como referencia del pago
+          external_reference: text,
         },
       });
 
-      // Si el pago no se aprobó, no guardamos el mensaje
-      if (payment.status !== "approved") return;
-
       // Guardamos el id del pago en una cookie que solo puede leer el servidor
       const cookieStore = await cookies();
-      const ids: number[] = JSON.parse(cookieStore.get("messages")?.value ?? "[]");
 
-      cookieStore.set("messages", JSON.stringify([...ids, payment.id]), {httpOnly: true});
+      cookieStore.set("payment", String(payment.id), {httpOnly: true});
     },
   },
 };
