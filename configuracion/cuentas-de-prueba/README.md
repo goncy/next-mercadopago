@@ -12,10 +12,10 @@ Las cuentas de prueba son importantes durante el periodo de desarrollo ya que co
 Podés hacerlo de dos formas: **a mano**, siguiendo los pasos de abajo, o **con el MCP de Mercado Pago**: [configurá el MCP](../mcp/README.md) y copiá este prompt en tu agente.
 
 ```text
-Usando el MCP de Mercado Pago, creá dos cuentas de prueba: una "seller" con la descripción "Vendedor" y una "buyer" con la descripción "Comprador" y 10000 de saldo. Mostrame el usuario y la contraseña de cada una.
+Usando el MCP de Mercado Pago, asegurate de tener una cuenta de prueba vendedora y una compradora (creálas si no existen), cargale 10000 de saldo a la compradora y mostrame el usuario de cada una.
 ```
 
-Después abrí una ventana de incógnito e iniciá sesión con cada cuenta para comprobar que funcionan.
+El MCP no muestra las contraseñas: las encontrás en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app), en la aplicación, en `Cuentas de prueba`. Después abrí una ventana de incógnito e iniciá sesión con cada cuenta para comprobar que funcionan.
 
 ### A mano
 

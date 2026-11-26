@@ -5,7 +5,7 @@ En este documento vamos a ver como crear una aplicación en Mercado Pago para lu
 Podés hacerlo de dos formas: **a mano**, siguiendo los pasos de abajo, o **con el MCP de Mercado Pago**: [configurá el MCP](../mcp/README.md) y copiá este prompt en tu agente.
 
 ```text
-Usando el MCP de Mercado Pago, creá una aplicación para pagos online en una integración propia. Producto: <Checkout Pro | Checkout Bricks | Suscripciones | Checkout API>. Nombre: next-mercadopago. Mostrame el resumen antes de crearla.
+Usando el MCP de Mercado Pago, creá una aplicación para pagos online en una integración propia. Producto: <Checkout Pro | Checkout Bricks | Suscripciones | Checkout API>. Nombre: <tu usuario>-next-mercadopago. Mostrame el resumen antes de crearla.
 ```
 
 ## A mano
