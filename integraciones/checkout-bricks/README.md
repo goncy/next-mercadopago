@@ -53,15 +53,13 @@ export default async function HomePage() {
     <section className="grid gap-8">
       <MessageForm amount={100} onSubmitAction={add} />
       {payment ? (
-        <section className="grid gap-3">
+        <article className="grid gap-1 rounded-lg border border-neutral-800 px-4 py-3 text-sm">
           <h2>Último pago</h2>
-          <article className="grid gap-1 rounded-lg border border-neutral-800 px-4 py-3 text-sm">
-            <p>{payment.text || "<mensaje vacío>"}</p>
-            <p className="text-neutral-400">
-              {payment.status} · ${payment.amount}
-            </p>
-          </article>
-        </section>
+          <p>{payment.external_reference || "<mensaje vacío>"}</p>
+          <p className="text-neutral-400">
+            {payment.status} · ${payment.transaction_amount}
+          </p>
+        </article>
       ) : null}
     </section>
   );
@@ -151,7 +149,7 @@ Dentro de `/src/api.ts`, la función `buy` en `message` se encarga de tomar los 
 const api = {
   message: {
     async buy(
-      text: Message["text"],
+      text: string,
       data: {amount: number; email: string; installments: number; token: string},
     ) {
       // Creamos el pago con los datos del brick
@@ -182,31 +180,24 @@ const api = {
 
 ## Mostrar el último pago
 
-No tenemos una base de datos: Mercado Pago ya guarda cada pago con el mensaje como referencia. Dentro de `/src/api.ts`, la función `last` en `message` lee el id del último pago de la cookie y le pide el pago a Mercado Pago:
+No tenemos una base de datos: Mercado Pago ya guarda cada pago con el mensaje como referencia. Dentro de `/src/api.ts`, la función `last` en `message` lee el id del último pago de la cookie y le pide el pago a Mercado Pago. `connection()` le indica a Next.js que esa consulta se hace en cada visita:
 
 ```ts
 const api = {
   message: {
-    async last(): Promise<Message | null> {
+    async last() {
       // Leemos de la cookie el id del último pago
       const cookieStore = await cookies();
       const id = cookieStore.get("payment")?.value;
 
-      // Si todavía no pagamos, no hay mensaje
+      // Si todavía no pagamos, no hay nada para mostrar
       if (!id) return null;
 
       // Consultamos el pago en cada visita, su estado puede cambiar
       await connection();
 
-      // Mercado Pago es nuestra base de datos: obtenemos el pago y el mensaje de su referencia
-      const payment = await new Payment(mercadopago).get({id});
-
-      return {
-        id: payment.id!,
-        text: payment.external_reference ?? "",
-        status: payment.status!,
-        amount: payment.transaction_amount!,
-      };
+      // Mercado Pago es nuestra base de datos: obtenemos el pago
+      return new Payment(mercadopago).get({id});
     },
   },
 };

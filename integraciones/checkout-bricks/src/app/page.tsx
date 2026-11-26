@@ -23,15 +23,13 @@ export default async function HomePage() {
     <section className="grid gap-8">
       <MessageForm amount={100} onSubmitAction={add} />
       {payment ? (
-        <section className="grid gap-3">
+        <article className="grid gap-1 rounded-lg border border-neutral-800 px-4 py-3 text-sm">
           <h2>Último pago</h2>
-          <article className="grid gap-1 rounded-lg border border-neutral-800 px-4 py-3 text-sm">
-            <p>{payment.text || "<mensaje vacío>"}</p>
-            <p className="text-neutral-400">
-              {payment.status} · ${payment.amount}
-            </p>
-          </article>
-        </section>
+          <p>{payment.external_reference || "<mensaje vacío>"}</p>
+          <p className="text-neutral-400">
+            {payment.status} · ${payment.transaction_amount}
+          </p>
+        </article>
       ) : null}
     </section>
   );
