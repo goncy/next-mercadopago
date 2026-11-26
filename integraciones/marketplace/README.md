@@ -9,18 +9,23 @@ La implementación de esta funcionalidad es muy similar a la integracion con Che
 Las dos primeras secciones ([la cuenta de prueba extra](#crear-una-cuenta-de-prueba-extra-para-marketplace) y [la URL de redirección](#configurando-la-url-de-redirección)) las podés hacer de dos formas:
 
 - **A mano**: siguiendo los pasos de abajo.
-- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) y copiá este prompt en tu agente.
+- **Con el MCP**: configurá el [MCP de Mercado Pago](../../configuracion/mcp/README.md) con los dos servidores, [cloná el proyecto](../../configuracion/clonar-aplicacion/README.md), [exponé el puerto 3000](../../configuracion/exponer-puerto/README.md) y copiá este prompt en tu agente. En el prompt, reemplazá `<URL pública>` por esa URL.
 
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
-1. Tomá APP_URL de ../checkout-pro/.env.local.
-2. Creá una aplicación de Checkout Pro llamada next-mercadopago-marketplace con la URL de redirección <APP_URL>/api/mercadopago/connect. Mostrame el resumen antes de crearla.
-3. Creá una cuenta de prueba vendedora llamada "Creador de contenido" y una compradora con 10000 de saldo. Mostrame el usuario y la contraseña de cada una.
-4. Copiá .env.example a .env.local y completá MP_ACCESS_TOKEN y NEXT_PUBLIC_MP_PUBLIC_KEY con las credenciales de prueba, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET con el Client ID y el Client Secret, y APP_URL con el mismo valor. No me muestres las credenciales y no agregues el archivo a git.
-5. Configurá el webhook en <APP_URL>/api/mercadopago para los eventos de Pagos.
+1. Con mercadopago-mcp-vendedor, creá una aplicación de Checkout Pro llamada <tu usuario>-next-mercadopago-marketplace con la URL de redirección <URL pública>/api/mercadopago/connect. Mostrame el resumen antes de crearla. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
+2. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de producción de esa aplicación, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET con su Client ID y su Client Secret, y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
+3. Con mercadopago-mcp-principal, cargale 10000 de saldo a la cuenta de prueba compradora y mostrame su usuario.
 ```
 
-Si usaste el MCP, salteá hasta [Revisando nuestra aplicación](#revisando-nuestra-aplicación).
+La cuenta vendedora de prueba hace de Marketplace: es la dueña de la aplicación, y sus credenciales de producción son credenciales de prueba porque la cuenta es de prueba. Hay dos pasos que el MCP no puede hacer y tenés que hacer en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app):
+
+1. **Configurar la URL de redirección**: el MCP crea la aplicación con una URL de redirección por defecto. Entrá al panel con la cuenta vendedora de prueba y seguí los pasos de [Configurando la URL de redirección](#configurando-la-url-de-redirección).
+2. **Crear el creador de contenido**: el MCP no puede crear otra cuenta vendedora. Entrá al panel con tu cuenta principal, andá a `Cuentas de prueba` en cualquier aplicación y creá una cuenta vendedora llamada `Creador de contenido`. Guardá su usuario y su contraseña.
+
+Para probar la integración vas a usar tres sesiones distintas: el creador de contenido para conectar su cuenta, la compradora para pagar y la vendedora de prueba (Marketplace) solo para el panel. Si en el navegador tenés abierta otra sesión, cerrala antes de conectar o de pagar.
+
+Si usaste el MCP, salteá hasta [Revisando nuestra aplicación](#revisando-nuestra-aplicación) después de hacer esos dos pasos.
 
 ## Índice
 
@@ -233,6 +238,13 @@ const api = {
           external_reference: "message",
           // Le agregamos ARS 5 de comisión
           marketplace_fee: 5,
+          // Le pedimos a Mercado Pago que nos notifique los cambios del pago en nuestro webhook
+          notification_url: `${process.env.APP_URL}/api/mercadopago`,
+          // Cuando el pago se aprueba, Mercado Pago vuelve solo a nuestra aplicación
+          back_urls: {
+            success: process.env.APP_URL,
+          },
+          auto_return: "approved",
         },
       });
 
@@ -274,7 +286,7 @@ const api = {
 
 ## Probar la integración
 
-Ya que usamos como base la integración de Checkout Pro, deberíamos tener la configuración del webhook de notificaciones de pago configurado. Por ende, si ya estamos conectados a Mercado Pago, deberíamos poder agregar un mensaje, recordá estar logeado con la tercer cuenta, la de Comprador (que no es ni Marketplace ni Creador de contenido).
+Como la preferencia le pasa `notification_url` a Mercado Pago, no hace falta configurar un webhook. Conectá la cuenta del creador de contenido y agregá un mensaje. Recordá pagar logueado con la tercera cuenta, la de Comprador (que no es ni Marketplace ni Creador de contenido).
 
 ![image](./screenshots/pago-aprobado.jpg)
 
