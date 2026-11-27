@@ -14,7 +14,7 @@ Podés preparar todo de dos formas:
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
 1. Con mercadopago-mcp-principal, asegurate de tener una cuenta de prueba vendedora y una compradora (creálas si no existen), cargale 10000 de saldo a la compradora y mostrame su usuario.
-2. Con mercadopago-mcp-vendedor, creá una aplicación de Checkout Pro llamada <tu usuario>-next-marketplace con la URL de redirección <URL pública>/api/mercadopago/connect. Mostrame el resumen antes de crearla. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
+2. Con mercadopago-mcp-vendedor, creá una aplicación de Checkout Pro llamada <tu usuario>-next-marketplace con la URL de redirección <URL pública>/api/mercadopago/connect. Mostrame el resumen antes de crearla. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá. Si la respuesta dice que la URL de redirección no se aplicó, pasame el link https://www.mercadopago.com.ar/developers/panel/app/<App ID>/edit-app y la URL que tengo que pegar en `Configuración avanzada`, y esperá a que te avise que la guardé.
 3. Con mercadopago-mcp-vendedor, configurá el webhook de esa aplicación en <URL pública>/api/mercadopago, en producción y en prueba, para el evento Order (Mercado Pago).
 4. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de producción de esa aplicación, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET con su Client ID y su Client Secret, y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
 ```
@@ -46,7 +46,10 @@ Como en este proceso hay 3 partes (Comprador, Vendedor y Marketplace), necesitam
 
 En este proceso vamos a hacer que el usario "Creador de contenido" autorice al usuario "Marketplace" a crear orders de pago en su nombre. Esto se hace mediante OAuth, donde luego de que el usuario "Creador de contenido" autorice la integración, se lo redirigirá a una URL de nuestra aplicación, la cual debemos configurar en Mercado Pago.
 
-En Mercado Pago, dentro del panel de administración de nuestra aplicación en nuestra cuenta de `Marketplace`, vamos a `Configuración de la aplicación` en el menú izquierdo.
+En Mercado Pago, dentro del panel de administración de nuestra aplicación en nuestra cuenta de `Marketplace`, vamos a `Configuración de la aplicación` en el menú izquierdo. Iniciá sesión con la cuenta vendedora de prueba (en una ventana de incógnito, si tenés abierta tu cuenta principal) y entrá directo a `https://www.mercadopago.com.ar/developers/panel/app/<App ID>/edit-app`.
+
+> [!NOTE]
+> `create_application` del MCP recibe la URL de redirección, pero hoy no la aplica: responde `Redirect URL Not Applied` y deja `https://www.mercadopago.com`. Por eso este paso siempre es a mano.
 
 ![image](./screenshots/configuracion-app.jpg)
 
