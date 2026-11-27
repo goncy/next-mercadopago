@@ -129,31 +129,19 @@ Hay varias propiedades más que podemos agregar al pago. Datos del comprador, el
 
 ## Volver a la aplicación y recibir notificaciones
 
-Tenemos un Route Handler (`src/app/api/mercadopago/route.ts`) definido en nuestra aplicación que se encarga de dos cosas: recibir al comprador cuando vuelve de Mercado Pago (`GET`) y recibir las notificaciones del webhook (`POST`).
+Tenemos un Route Handler (`src/app/api/mercadopago/route.ts`) definido en nuestra aplicación que se encarga de dos cosas: recibir al comprador cuando vuelve de Mercado Pago (`GET`) y recibir las notificaciones del webhook (`POST`). En los dos casos le pasamos el ID del pago a `api.payment.verify`, que vemos más abajo.
 
 ```ts
-import {Order} from "mercadopago";
-import {revalidateTag} from "next/cache";
 import {type NextRequest, NextResponse} from "next/server";
 
-import {mercadopago} from "@/api";
-
-async function verify(id: string) {
-  // Obtenemos el pago desde Mercado Pago para no confiar en lo que nos llega en la petición
-  const order = await new Order(mercadopago).get({id});
-
-  // Si se procesó (el pago se aprobó), invalidamos los mensajes para mostrar el nuevo mensaje
-  if (order.status === "processed") {
-    revalidateTag("messages", {expire: 0});
-  }
-}
+import api from "@/api";
 
 // Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id del pago en `order_id`
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("order_id");
 
   if (id) {
-    await verify(id);
+    await api.payment.verify(id);
   }
 
   // Volvemos a la página de inicio, que ya muestra el mensaje nuevo
@@ -167,7 +155,7 @@ export async function POST(request: Request) {
 
   // Solo nos interesan las notificaciones de pagos (`order`), ignoramos el resto
   if (body.type === "order" && body.data?.id) {
-    await verify(body.data.id);
+    await api.payment.verify(body.data.id);
   }
 
   // Respondemos con un estado 200 para indicarle que la notificación fue recibida
@@ -195,7 +183,23 @@ A mano, iniciá sesión en el [panel de desarrolladores](https://www.mercadopago
 
 ## Verificar la autenticidad del pago
 
-Tanto la vuelta del comprador como el webhook nos dan el ID de un pago, pero cualquiera podría visitar esa URL o hacer un POST con un ID inventado. Por eso no confiamos en lo que nos llega: `verify` obtiene el pago desde Mercado Pago con nuestras credenciales y solo si su `status` es `processed` (el pago se aprobó y se acreditó) invalida el tag `messages` para que se muestren los mensajes actualizados.
+Tanto la vuelta del comprador como el webhook nos dan el ID de un pago, pero cualquiera podría visitar esa URL o hacer un POST con un ID inventado. Por eso no confiamos en lo que nos llega. Dentro de `/src/api.ts`, la función `verify` en `payment` obtiene el pago desde Mercado Pago con nuestras credenciales y solo si su `status` es `processed` (el pago se aprobó y se acreditó) invalida el tag `messages` para que se muestren los mensajes actualizados.
+
+```ts
+const api = {
+  payment: {
+    async verify(id: string) {
+      // Obtenemos el pago desde Mercado Pago para no confiar en el id que nos llega
+      const order = await new Order(mercadopago).get({id});
+
+      // Si se procesó (el pago se aprobó), invalidamos los mensajes para mostrar el nuevo mensaje
+      if (order.status === "processed") {
+        revalidateTag("messages", {expire: 0});
+      }
+    },
+  },
+};
+```
 
 > [!NOTE]
 > La página es estática (`ensureStatic = "navigation"` hace que el build falle si algo la vuelve dinámica). `api.message.list` usa `"use cache"` con el tag `messages`. Como la verificación pasa en un Route Handler usamos `revalidateTag` con `{expire: 0}` para que la próxima visita ya vea el mensaje nuevo.
@@ -216,17 +220,16 @@ const api = {
       cacheLife("max");
       cacheTag("messages");
 
-      // La búsqueda acepta un rango de fechas de hasta un mes, así que buscamos los pagos de los últimos 30 días
-      const end = new Date();
-      const begin = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
+      // La búsqueda pide un rango de fechas de hasta 30 días: buscamos los pagos de los últimos 30 días
+      const now = Date.now();
 
       // Mercado Pago es nuestra base de datos: cada mensaje es un pago procesado (aprobado) con el texto en su `description`
       const {data = []} = await new Order(mercadopago).search({
         options: {
           external_reference: "message",
           status: "processed",
-          begin_date: begin.toISOString(),
-          end_date: end.toISOString(),
+          begin_date: new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          end_date: new Date(now).toISOString(),
         },
       });
 
@@ -237,7 +240,7 @@ const api = {
 };
 ```
 
-La búsqueda pide un rango de fechas (`begin_date` y `end_date`) de hasta un mes, así que el muro muestra los mensajes de los últimos 30 días. Como `list` está cacheada, las fechas se calculan cada vez que invalidamos el tag `messages`, no en cada visita.
+Mercado Pago no deja buscar sin un rango de fechas (`begin_date` y `end_date`), y el rango puede ser de hasta 30 días exactos (con un milisegundo más responde `date range: maximum allowed is 1 month`), así que el muro muestra los mensajes de los últimos 30 días. Por eso calculamos las dos fechas a partir del mismo `now`.
 
 Como cada mensaje es un pago, tampoco se pueden duplicar: aunque Mercado Pago nos notifique varias veces el mismo pago, la búsqueda lo devuelve una sola vez.
 
