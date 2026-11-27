@@ -10,7 +10,8 @@ En cada paso que se puede hacer con el MCP vas a encontrar dos opciones: seguir 
 2. [Agregar los servidores](#agregar-los-servidores)
 3. [Autorizar tu cuenta principal](#autorizar-tu-cuenta-principal)
 4. [Autorizar la cuenta vendedora de prueba](#autorizar-la-cuenta-vendedora-de-prueba)
-5. [Probar la conexión](#probar-la-conexión)
+5. [Lo que el MCP no hace](#lo-que-el-mcp-no-hace)
+6. [Probar la conexión](#probar-la-conexión)
 
 ## Las dos cuentas
 
@@ -58,6 +59,15 @@ Hacé este paso cuando el prompt de la integración te lo pida: para ese momento
 2. Abrí una ventana de incógnito, así no se mezcla con tu sesión principal.
 3. Iniciá la conexión de `mercadopago-mcp-vendedor` desde tu agente y abrí el link de autorización en la ventana de incógnito.
 4. Iniciá sesión con el usuario y la contraseña de la vendedora y autorizá la conexión.
+
+## Lo que el MCP no hace
+
+Estas limitaciones las encontramos usando el MCP con este repositorio:
+
+- **`create_application` no aplica la URL de redirección.** La recibe, pero responde `Redirect URL Not Applied` y deja `https://www.mercadopago.com`. Para Marketplace la tenés que cargar a mano en `Configuración de la aplicación`, que además pide un captcha.
+- **No deja elegir el tipo de API para Checkout Pro.** Las aplicaciones de Checkout Pro que crea el MCP figuran con la API de Preferences, pero el código de este repositorio funciona igual con sus credenciales.
+- **`create_test_user` no anda con la vendedora de prueba.** Responde `FORBIDDEN_FOR_TRIAL_ACCOUNTS`: las cuentas de prueba se crean desde tu cuenta principal, en el panel o con `mercadopago-mcp-principal`.
+- **El MCP no muestra las contraseñas de las cuentas de prueba.** Están en el panel, en `Cuentas de prueba`, que puede pedirte validar la sesión con un QR desde la app de Mercado Pago.
 
 ## Probar la conexión
 

@@ -60,6 +60,11 @@ Acá no solo vamos a encontrar un listado de tarjetas de prueba, sino que nombre
 > [!TIP]
 > En mi experiencia la tarjeta de Visa es la que mejor funciona.
 
+Si pagás con tarjeta sin iniciar sesión (como invitado) y la vendedora es una cuenta de prueba, en `E-mail para comprobante` poné el e-mail de la cuenta compradora de prueba. Si su usuario es `TESTUSER123456`, su e-mail es `test_user_123456@testuser.com`. Con cualquier otro e-mail, Mercado Pago rechaza el pago con "Una de las partes con la que intentás hacer el pago es de prueba", porque la vendedora es de prueba y el comprador no.
+
+> [!NOTE]
+> Cuando el pago lleva una comisión de Marketplace (`marketplace_fee`), en nuestras pruebas pagar como invitado con una tarjeta de prueba fallaba con "No pudimos procesar tu pago". Iniciando sesión con la compradora de prueba y pagando con dinero disponible, el pago se aprueba.
+
 ---
 
 [Volver al inicio](../../README.md)

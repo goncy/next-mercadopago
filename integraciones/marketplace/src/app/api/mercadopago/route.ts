@@ -1,22 +1,29 @@
-import {Payment} from "mercadopago";
 import {revalidateTag} from "next/cache";
+import {type NextRequest, NextResponse} from "next/server";
 
-import {mercadopago} from "@/api";
+import api from "@/api";
 
+// Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id del pago en `order_id`
+export async function GET(request: NextRequest) {
+  const id = request.nextUrl.searchParams.get("order_id");
+  // Leemos el access token del vendedor de la cookie, porque el pago es suyo
+  const marketplace = await api.user.token();
+
+  if (id && marketplace) {
+    await api.payment.verify(id, marketplace);
+  }
+
+  // Volvemos a la página del marketplace, que ya muestra el mensaje nuevo
+  return NextResponse.redirect(process.env.APP_URL!);
+}
+
+// Mercado Pago nos envía acá las notificaciones del webhook que configuramos en el panel
 export async function POST(request: Request) {
   // Obtenemos el cuerpo de la petición que incluye información sobre la notificación
   const body: {data?: {id: string}; type?: string} = await request.json();
 
-  // Solo nos interesan las notificaciones de pagos, ignoramos el resto (como las de `merchant_order`)
-  if (body.type !== "payment" || !body.data?.id) {
-    return new Response(null, {status: 200});
-  }
-
-  // Obtenemos el pago
-  const payment = await new Payment(mercadopago).get({id: body.data.id});
-
-  // Si se aprueba, invalidamos los mensajes para mostrar el nuevo pago
-  if (payment.status === "approved") {
+  // El pago es del vendedor y acá no tenemos su access token, así que no lo podemos obtener. Invalidamos los mensajes y la lista los vuelve a buscar en Mercado Pago con el token del vendedor, que solo devuelve los pagos procesados
+  if (body.type === "order" && body.data?.id) {
     revalidateTag("messages", {expire: 0});
   }
 

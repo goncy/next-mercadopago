@@ -16,7 +16,7 @@ export default async function MarketplacePage() {
   // Obtenemos los mensajes del vendedor
   const messages = await api.message.list(marketplace);
 
-  // Creamos una preferencia de pago y redirigimos al usuario a Mercado Pago
+  // Creamos el pago y redirigimos al usuario a Mercado Pago
   async function add(formData: FormData) {
     "use server";
 
@@ -31,7 +31,7 @@ export default async function MarketplacePage() {
   return (
     <section className="grid gap-8">
       <form action={add}>
-        <textarea name="text" placeholder="Hola perro" rows={3} />
+        <textarea maxLength={150} name="text" placeholder="Hola perro" rows={3} />
         <button type="submit">Enviar</button>
       </form>
       <section className="grid gap-3">

@@ -14,8 +14,9 @@ Podés preparar todo de dos formas:
 ```text
 Usando el MCP de Mercado Pago, prepará este proyecto para desarrollo:
 1. Con mercadopago-mcp-principal, asegurate de tener una cuenta de prueba vendedora y una compradora (creálas si no existen), cargale 10000 de saldo a la compradora y mostrame su usuario.
-2. Con mercadopago-mcp-vendedor, creá una aplicación de Checkout Pro llamada <tu usuario>-next-marketplace con la URL de redirección <URL pública>/api/mercadopago/connect. Mostrame el resumen antes de crearla. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá.
-3. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de producción de esa aplicación, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET con su Client ID y su Client Secret, y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
+2. Con mercadopago-mcp-vendedor, creá una aplicación de Checkout Pro llamada <tu usuario>-next-marketplace con la URL de redirección <URL pública>/api/mercadopago/connect. Mostrame el resumen antes de crearla. Si mercadopago-mcp-vendedor no está autorizado, pedime que lo autorice con la cuenta vendedora de prueba y esperá. Si la respuesta dice que la URL de redirección no se aplicó, pasame el link https://www.mercadopago.com.ar/developers/panel/app/<App ID>/edit-app y la URL que tengo que pegar en `Configuración avanzada`, y esperá a que te avise que la guardé.
+3. Con mercadopago-mcp-vendedor, configurá el webhook de esa aplicación en <URL pública>/api/mercadopago, en producción y en prueba, para el evento Order (Mercado Pago).
+4. Copiá .env.example a .env.local. Completá MP_ACCESS_TOKEN con el access token de producción de esa aplicación, NEXT_PUBLIC_MP_CLIENT_ID y MP_CLIENT_SECRET con su Client ID y su Client Secret, y APP_URL con <URL pública>. No me muestres las credenciales y no agregues el archivo a git.
 ```
 
 La cuenta vendedora de prueba hace de Marketplace: es la dueña de la aplicación. El MCP no puede configurar la URL de redirección ni crear una segunda cuenta vendedora, así que [crear la cuenta del creador de contenido](#crear-una-cuenta-de-prueba-extra-para-marketplace) y [configurar la URL de redirección](#configurando-la-url-de-redirección) los hacés a mano en el panel, también si usaste el MCP. Después seguí desde [Revisando nuestra aplicación](#revisando-nuestra-aplicación).
@@ -30,9 +31,10 @@ Para probar vas a usar tres sesiones distintas: el creador de contenido para con
 4. [Obtener la URL de autorización](#obtener-la-url-de-autorización)
 5. [Autorizar la integración](#autorizar-la-integración)
 6. [Guardar el access token autorizado](#guardar-el-access-token-autorizado)
-7. [Crear una preferencia de pago en nombre del creador de contenido](#crear-una-preferencia-de-pago-en-nombre-del-creador-de-contenido)
-8. [Listar los mensajes del creador de contenido](#listar-los-mensajes-del-creador-de-contenido)
-9. [Probar la integración](#probar-la-integración)
+7. [Crear un pago en nombre del creador de contenido](#crear-un-pago-en-nombre-del-creador-de-contenido)
+8. [Volver a la aplicación y recibir notificaciones](#volver-a-la-aplicación-y-recibir-notificaciones)
+9. [Listar los mensajes del creador de contenido](#listar-los-mensajes-del-creador-de-contenido)
+10. [Probar la integración](#probar-la-integración)
 
 ## Crear una cuenta de prueba extra para Marketplace
 
@@ -42,9 +44,12 @@ Como en este proceso hay 3 partes (Comprador, Vendedor y Marketplace), necesitam
 
 ## Configurando la URL de redirección
 
-En este proceso vamos a hacer que el usario "Creador de contenido" autorice al usuario "Marketplace" a crear preferencias de pago en su nombre. Esto se hace mediante OAuth, donde luego de que el usuario "Creador de contenido" autorice la integración, se lo redirigirá a una URL de nuestra aplicación, la cual debemos configurar en Mercado Pago.
+En este proceso vamos a hacer que el usario "Creador de contenido" autorice al usuario "Marketplace" a crear pagos en su nombre. Esto se hace mediante OAuth, donde luego de que el usuario "Creador de contenido" autorice la integración, se lo redirigirá a una URL de nuestra aplicación, la cual debemos configurar en Mercado Pago.
 
-En Mercado Pago, dentro del panel de administración de nuestra aplicación en nuestra cuenta de `Marketplace`, vamos a `Configuración de la aplicación` en el menú izquierdo.
+En Mercado Pago, dentro del panel de administración de nuestra aplicación en nuestra cuenta de `Marketplace`, vamos a `Configuración de la aplicación` en el menú izquierdo. Iniciá sesión con la cuenta vendedora de prueba (en una ventana de incógnito, si tenés abierta tu cuenta principal) y entrá directo a `https://www.mercadopago.com.ar/developers/panel/app/<App ID>/edit-app`.
+
+> [!NOTE]
+> `create_application` del MCP recibe la URL de redirección, pero hoy no la aplica: responde `Redirect URL Not Applied` y deja `https://www.mercadopago.com`. Por eso este paso siempre es a mano.
 
 ![image](./screenshots/configuracion-app.jpg)
 
@@ -78,7 +83,7 @@ export default async function MarketplacePage() {
   // Obtenemos los mensajes del vendedor
   const messages = await api.message.list(marketplace);
 
-  // Creamos una preferencia de pago y redirigimos al usuario a Mercado Pago
+  // Creamos el pago y redirigimos al usuario a Mercado Pago
   async function add(formData: FormData) {
     "use server";
 
@@ -93,7 +98,7 @@ export default async function MarketplacePage() {
   return (
     <section className="grid gap-8">
       <form action={add}>
-        <textarea name="text" placeholder="Hola perro" rows={3} />
+        <textarea maxLength={150} name="text" placeholder="Hola perro" rows={3} />
         <button type="submit">Enviar</button>
       </form>
       <section className="grid gap-3">
@@ -114,7 +119,7 @@ export default async function MarketplacePage() {
 
 ## Obtener la URL de autorización
 
-Dentro de `/src/api.ts`, la función `authorize` en `user` se encarga de generar la URL a donde vamos a redirigir al usuario para que autorice al Marketplace a crear preferencias de pago en su nombre:
+Dentro de `/src/api.ts`, la función `authorize` en `user` se encarga de generar la URL a donde vamos a redirigir al usuario para que autorice al Marketplace a crear pagos en su nombre:
 
 ```ts
 const api = {
@@ -167,7 +172,7 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-Vamos a extraer ese parametro y se lo pasamos a la función `connect` en `user` para obtener las credenciales del usuario, incluyendo un access token que nos permite crear preferencias de pago en nombre del creador de contenido.
+Vamos a extraer ese parametro y se lo pasamos a la función `connect` en `user` para obtener las credenciales del usuario, incluyendo un access token que nos permite crear pagos en nombre del creador de contenido.
 
 Ese access token lo guardamos en una cookie `httpOnly` (que solo puede leer el servidor) y redirigimos al usuario nuevamente a la página de inicio.
 
@@ -205,9 +210,9 @@ const api = {
 }
 ```
 
-## Crear una preferencia de pago en nombre del creador de contenido
+## Crear un pago en nombre del creador de contenido
 
-Dentro de `/src/api.ts`, la función `submit` en `message` se encarga de crear una preferencia de pago y devolver el init point (url de pago). Pero no vamos a usar nuestro cliente de Mercado Pago como veníamos haciendo antes, sino que vamos a crear un nuevo cliente usando el access token del creador de contenido. Entonces, cuando creemos esa preferencia, el pago va a ir para el creador de contenido, pero va a retener un valor fijo (el definido en `marketplace_fee`) como comisión para el usuario Marketplace:
+Dentro de `/src/api.ts`, la función `submit` en `message` se encarga de crear el pago y devolver la URL del checkout (url de pago). Pero no vamos a usar nuestro cliente de Mercado Pago como veníamos haciendo antes, sino que vamos a crear un nuevo cliente usando el access token del creador de contenido. Entonces, cuando creemos ese pago, el dinero va a ir para el creador de contenido, pero va a retener un valor fijo (el definido en `marketplace_fee`) como comisión para el usuario Marketplace:
 
 ```ts
 const api = {
@@ -216,44 +221,113 @@ const api = {
       // Creamos el cliente de Mercado Pago usando el access token del vendedor
       const client = new MercadoPagoConfig({accessToken: marketplace});
 
-      // Creamos la preferencia incluyendo el precio, titulo y metadata. La información de `items` es standard de Mercado Pago. La información que nosotros necesitamos para nuestra DB debería vivir en `metadata`.
-      const preference = await new Preference(client).create({
+      // Creamos el pago incluyendo el monto, los items y la descripción. La información de `items` es standard de Mercado Pago. El texto del mensaje lo guardamos en `description`.
+      const order = await new Order(client).create({
         body: {
+          // En Checkout Pro el pago es `online` y se procesa en modo `manual`: el comprador paga en Mercado Pago
+          type: "online",
+          processing_mode: "manual",
+          // Los montos van como strings
+          total_amount: "100.00",
           items: [
             {
-              id: "message",
-              unit_price: 100,
+              external_code: "message",
+              unit_price: "100.00",
               quantity: 1,
               title: "Mensaje de muro",
             },
           ],
-          metadata: {
-            text,
-          },
+          description: text,
           // Marcamos el pago como mensaje para poder buscarlo después
           external_reference: "message",
           // Le agregamos ARS 5 de comisión
-          marketplace_fee: 5,
-          // Le pedimos a Mercado Pago que nos notifique los cambios del pago en nuestro webhook
-          notification_url: `${process.env.APP_URL}/api/mercadopago`,
-          // Cuando el pago se aprueba, Mercado Pago vuelve solo a nuestra aplicación
-          back_urls: {
-            success: process.env.APP_URL,
+          marketplace_fee: "5.00",
+          config: {
+            online: {
+              // Cuando el pago se aprueba, Mercado Pago vuelve solo a nuestra aplicación, a la ruta que verifica el pago
+              success_url: `${process.env.APP_URL}/api/mercadopago`,
+              auto_return: "approved",
+            },
           },
-          auto_return: "approved",
         },
       });
 
-      // Devolvemos el init point (url de pago) para que el usuario pueda pagar
-      return preference.init_point!;
-    }
+      // Devolvemos la url del checkout para que el usuario pueda pagar
+      return order.checkout_url!;
+    },
+  },
+};
+```
+
+Igual que en Checkout Pro, guardamos el texto del mensaje en `description` (hasta 150 caracteres), y los montos, incluida la comisión, van como strings.
+
+## Volver a la aplicación y recibir notificaciones
+
+Como en Checkout Pro, el Route Handler `src/app/api/mercadopago/route.ts` recibe al comprador cuando vuelve de Mercado Pago (`GET`) y las notificaciones del webhook (`POST`):
+
+```ts
+import {revalidateTag} from "next/cache";
+import {type NextRequest, NextResponse} from "next/server";
+
+import api from "@/api";
+
+// Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id del pago en `order_id`
+export async function GET(request: NextRequest) {
+  const id = request.nextUrl.searchParams.get("order_id");
+  // Leemos el access token del vendedor de la cookie, porque el pago es suyo
+  const marketplace = await api.user.token();
+
+  if (id && marketplace) {
+    await api.payment.verify(id, marketplace);
   }
+
+  // Volvemos a la página del marketplace, que ya muestra el mensaje nuevo
+  return NextResponse.redirect(process.env.APP_URL!);
+}
+
+// Mercado Pago nos envía acá las notificaciones del webhook que configuramos en el panel
+export async function POST(request: Request) {
+  // Obtenemos el cuerpo de la petición que incluye información sobre la notificación
+  const body: {data?: {id: string}; type?: string} = await request.json();
+
+  // El pago es del vendedor y acá no tenemos su access token, así que no lo podemos obtener. Invalidamos los mensajes y la lista los vuelve a buscar en Mercado Pago con el token del vendedor, que solo devuelve los pagos procesados
+  if (body.type === "order" && body.data?.id) {
+    revalidateTag("messages", {expire: 0});
+  }
+
+  // Respondemos con un estado 200 para indicarle que la notificación fue recibida
+  return new Response(null, {status: 200});
 }
 ```
 
+Cuando el comprador vuelve, el navegador todavía tiene la cookie con el access token del creador de contenido, así que se lo pasamos a la función `verify` en `payment`, dentro de `/src/api.ts`. Esa función obtiene el pago con ese token y, si está `processed`, invalida los mensajes:
+
+```ts
+const api = {
+  payment: {
+    async verify(id: string, marketplace: string) {
+      // Creamos el cliente de Mercado Pago usando el access token del vendedor, porque el pago es suyo
+      const client = new MercadoPagoConfig({accessToken: marketplace});
+
+      // Obtenemos el pago desde Mercado Pago para no confiar en el id que nos llega
+      const order = await new Order(client).get({id});
+
+      // Si se procesó (el pago se aprobó), invalidamos los mensajes para mostrar el nuevo mensaje
+      if (order.status === "processed") {
+        revalidateTag("messages", {expire: 0});
+      }
+    },
+  },
+};
+```
+
+El webhook es distinto: lo llama el servidor de Mercado Pago, que no tiene esa cookie, y con nuestro access token (el del Marketplace) Mercado Pago no nos deja obtener un pago que es del creador de contenido (responde `order_not_found`). Pero tampoco hace falta: el webhook solo invalida los mensajes, y `list` los vuelve a buscar en Mercado Pago con el token del creador de contenido, que solo devuelve los pagos procesados. Una notificación inventada no puede agregar un mensaje que no se pagó.
+
+Las notificaciones de los pagos que creamos con el token del creador de contenido llegan al webhook de nuestra aplicación (la del Marketplace). El webhook se [configura en el panel](../../configuracion/webhook/README.md) de la aplicación, con la cuenta vendedora de prueba, con el evento `Order (Mercado Pago)` y la URL `<APP_URL>/api/mercadopago`. También lo podés configurar con `mercadopago-mcp-vendedor`, como en el paso 3 del prompt.
+
 ## Listar los mensajes del creador de contenido
 
-Igual que en Checkout Pro, no tenemos una base de datos: cada mensaje es un pago aprobado con el texto en su `metadata`. La diferencia es que los pagos van a la cuenta del creador de contenido, así que los buscamos con su access token:
+Igual que en Checkout Pro, no tenemos una base de datos: cada mensaje es un pago procesado con el texto en su `description`, y buscamos los de los últimos 30 días porque la búsqueda pide un rango de fechas de hasta 30 días. La diferencia es que los pagos son de la cuenta del creador de contenido, así que los buscamos con su access token:
 
 ```ts
 const api = {
@@ -268,13 +342,21 @@ const api = {
       // Creamos el cliente de Mercado Pago usando el access token del vendedor
       const client = new MercadoPagoConfig({accessToken: marketplace});
 
-      // Mercado Pago es nuestra base de datos: cada mensaje es un pago aprobado en la cuenta del vendedor con el texto en su `metadata`
-      const {results = []} = await new Payment(client).search({
-        options: {external_reference: "message", status: "approved"},
+      // La búsqueda pide un rango de fechas de hasta 30 días: buscamos los pagos de los últimos 30 días
+      const now = Date.now();
+
+      // Mercado Pago es nuestra base de datos: cada mensaje es un pago procesado (aprobado) en la cuenta del vendedor con el texto en su `description`
+      const {data = []} = await new Order(client).search({
+        options: {
+          external_reference: "message",
+          status: "processed",
+          begin_date: new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          end_date: new Date(now).toISOString(),
+        },
       });
 
       // Devolvemos los pagos como mensajes
-      return results.map((payment) => ({id: payment.id!, text: payment.metadata.text}));
+      return data.map((order) => ({id: order.id!, text: order.description!}));
     },
   },
 };
@@ -282,11 +364,14 @@ const api = {
 
 ## Probar la integración
 
-Como la preferencia le pasa `notification_url` a Mercado Pago, no hace falta configurar un webhook. Conectá la cuenta del creador de contenido y agregá un mensaje. Recordá pagar logueado con la tercera cuenta, la de Comprador (que no es ni Marketplace ni Creador de contenido).
+Conectá la cuenta del creador de contenido y agregá un mensaje. Recordá pagar logueado con la tercera cuenta, la de Comprador (que no es ni Marketplace ni Creador de contenido), con el dinero disponible.
+
+> [!NOTE]
+> Con la comisión del Marketplace, en nuestras pruebas el pago como invitado con tarjeta de prueba fallaba con "No pudimos procesar tu pago", también con la versión anterior de la API. Logueado con la compradora y pagando con dinero disponible, el pago se aprueba.
 
 ![image](./screenshots/pago-aprobado.jpg)
 
-Una vez que el pago fue aprobado, deberíamos ver el mensaje en la lista. Y si nos fijamos en la actividad de cuenta de Mercado Pago del Creador de contenido, deberíamos ver el pago con el detalle indicando la comisión que se queda el Marketplace.
+Una vez que el pago fue aprobado, Mercado Pago nos devuelve a la aplicación y deberíamos ver el mensaje en la lista. Y si nos fijamos en la actividad de cuenta de Mercado Pago del Creador de contenido, deberíamos ver el pago con el detalle indicando la comisión que se queda el Marketplace.
 
 ![image](./screenshots/actividad-de-cuenta.jpg)
 

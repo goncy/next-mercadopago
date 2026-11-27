@@ -20,7 +20,7 @@ export default async function HomePage() {
   return (
     <section className="grid gap-8">
       <form action={add}>
-        <textarea name="text" placeholder="Hola perro" rows={3} />
+        <textarea maxLength={150} name="text" placeholder="Hola perro" rows={3} />
         <button type="submit">Enviar</button>
       </form>
       <section className="grid gap-3">
