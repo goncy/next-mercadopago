@@ -21,12 +21,12 @@ El usuario de la compradora también está en el [panel de desarrolladores](http
 [![Integrar pagos con Mercado Pago a una aplicación Next.js](https://img.youtube.com/vi/BUHUW7tAr_Y/maxresdefault.jpg)](https://www.youtube.com/watch?v=BUHUW7tAr_Y)
 
 > [!NOTE]
-> El video usa la API de Preferences, que Mercado Pago va a dar de baja. Este documento ya usa la API de Orders, así que el código cambia un poco, pero el flujo es el mismo.
+> El video usa una versión anterior de la API de Mercado Pago, así que el código cambia un poco, pero el flujo es el mismo.
 
 ## Índice
 
 1. [Revisando nuestra aplicación](#revisando-nuestra-aplicación)
-2. [Crear una order de pago](#crear-una-order-de-pago)
+2. [Crear el pago](#crear-el-pago)
 3. [Volver a la aplicación y recibir notificaciones](#volver-a-la-aplicación-y-recibir-notificaciones)
 4. [Verificar la autenticidad del pago](#verificar-la-autenticidad-del-pago)
 5. [Listar los mensajes](#listar-los-mensajes)
@@ -75,21 +75,21 @@ export default async function HomePage() {
 }
 ```
 
-## Crear una order de pago
+## Crear el pago
 
-Dentro de `/src/api.ts`, la función `submit` en `message` se encarga de crear una order de pago y devolver el checkout url (url de pago):
+Dentro de `/src/api.ts`, la función `submit` en `message` se encarga de crear el pago en Mercado Pago y devolver la URL del checkout (url de pago):
 
 ```ts
 const api = {
   message: {
     async submit(text: Message["text"]) {
-      // Creamos la order incluyendo el monto, los items y la descripción. La información de `items` es standard de Mercado Pago. Orders no tiene `metadata`, así que guardamos el texto del mensaje en `description`.
+      // Creamos el pago incluyendo el monto, los items y la descripción. La información de `items` es standard de Mercado Pago. El texto del mensaje lo guardamos en `description`.
       const order = await new Order(mercadopago).create({
         body: {
-          // Checkout Pro usa orders `online` procesadas en modo `manual`: el comprador paga en Mercado Pago
+          // En Checkout Pro el pago es `online` y se procesa en modo `manual`: el comprador paga en Mercado Pago
           type: "online",
           processing_mode: "manual",
-          // Los montos de Orders son strings
+          // Los montos van como strings
           total_amount: "100.00",
           items: [
             {
@@ -100,11 +100,11 @@ const api = {
             },
           ],
           description: text,
-          // Marcamos la order como mensaje para poder buscarla después
+          // Marcamos el pago como mensaje para poder buscarlo después
           external_reference: "message",
           config: {
             online: {
-              // Cuando el pago se aprueba, Mercado Pago vuelve solo a nuestra aplicación, a la ruta que verifica la order
+              // Cuando el pago se aprueba, Mercado Pago vuelve solo a nuestra aplicación, a la ruta que verifica el pago
               success_url: `${process.env.APP_URL}/api/mercadopago`,
               auto_return: "approved",
             },
@@ -119,13 +119,13 @@ const api = {
 }
 ```
 
-Podemos pensar a la order como un objeto que representa una orden de compra: algo que un usuario quiere comprar. Para Checkout Pro siempre es `type: "online"` con `processing_mode: "manual"`, y `total_amount` tiene que ser igual a la suma de los items.
+Podemos pensar al pago (Mercado Pago lo llama `Order`) como un objeto que representa una orden de compra: algo que un usuario quiere comprar. `total_amount` tiene que ser igual a la suma de los items.
 
-Orders no tiene un campo `metadata` como tenían las preferencias, así que guardamos el texto del mensaje en `description`. `description` acepta hasta 150 caracteres, por eso el `textarea` del formulario tiene `maxLength={150}`.
+El texto del mensaje lo guardamos en `description`, que acepta hasta 150 caracteres. Por eso el `textarea` del formulario tiene `maxLength={150}`.
 
 Con `auto_return: "approved"` Mercado Pago vuelve solo a nuestra aplicación cuando el pago se aprueba. Para eso necesita saber a dónde volver, así que también definimos `success_url`.
 
-Hay varias propiedades más que podemos agregar a la order. Datos del comprador, el vencimiento, los medios de pago permitidos, etc. Podés ver más [acá](https://www.mercadopago.com.ar/developers/es/reference/online-payments/checkout-pro/create-order/post).
+Hay varias propiedades más que podemos agregar al pago. Datos del comprador, el vencimiento, los medios de pago permitidos, etc. Podés ver más [acá](https://www.mercadopago.com.ar/developers/es/reference/online-payments/checkout-pro/create-order/post).
 
 ## Volver a la aplicación y recibir notificaciones
 
@@ -139,7 +139,7 @@ import {type NextRequest, NextResponse} from "next/server";
 import {mercadopago} from "@/api";
 
 async function verify(id: string) {
-  // Obtenemos la order desde Mercado Pago para no confiar en lo que nos llega en la petición
+  // Obtenemos el pago desde Mercado Pago para no confiar en lo que nos llega en la petición
   const order = await new Order(mercadopago).get({id});
 
   // Si se procesó (el pago se aprobó), invalidamos los mensajes para mostrar el nuevo mensaje
@@ -148,7 +148,7 @@ async function verify(id: string) {
   }
 }
 
-// Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id de la order en `order_id`
+// Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id del pago en `order_id`
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("order_id");
 
@@ -165,7 +165,7 @@ export async function POST(request: Request) {
   // Obtenemos el cuerpo de la petición que incluye información sobre la notificación
   const body: {data?: {id: string}; type?: string} = await request.json();
 
-  // Solo nos interesan las notificaciones de orders, ignoramos el resto
+  // Solo nos interesan las notificaciones de pagos (`order`), ignoramos el resto
   if (body.type === "order" && body.data?.id) {
     await verify(body.data.id);
   }
@@ -175,12 +175,12 @@ export async function POST(request: Request) {
 }
 ```
 
-Cuando el pago se aprueba, Mercado Pago redirige al comprador a `success_url` y le agrega a la URL el id de la order en `order_id`. Es lo primero que pasa después de pagar, así que el mensaje ya aparece cuando el comprador vuelve a la página de inicio.
+Cuando el pago se aprueba, Mercado Pago redirige al comprador a `success_url` y le agrega a la URL el id del pago en `order_id`. Es lo primero que pasa después de pagar, así que el mensaje ya aparece cuando el comprador vuelve a la página de inicio.
 
-Pero si el comprador cierra la pestaña antes de volver, nunca nos enteramos. Para eso está el webhook: Mercado Pago le avisa a nuestro servidor de cada cambio en la order, aunque el comprador no vuelva. Con Orders, el webhook se [configura en el panel](../../configuracion/webhook/README.md) con el evento `Order (Mercado Pago)` y la URL `<APP_URL>/api/mercadopago`.
+Pero si el comprador cierra la pestaña antes de volver, nunca nos enteramos. Para eso está el webhook: Mercado Pago le avisa a nuestro servidor de cada cambio en el pago, aunque el comprador no vuelva. El webhook se [configura en el panel](../../configuracion/webhook/README.md) con el evento `Order (Mercado Pago)` y la URL `<APP_URL>/api/mercadopago`.
 
 > [!IMPORTANT]
-> Las notificaciones llegan a la aplicación dueña de las credenciales con las que creamos la order, no a la que creaste vos. Las credenciales de prueba de Checkout Pro son las credenciales de producción de una aplicación `TestApp-…` que Mercado Pago crea en la cuenta vendedora de prueba, así que el webhook se configura en esa aplicación. Si no lo configurás, el mensaje igual aparece gracias a la vuelta del comprador.
+> Las notificaciones llegan a la aplicación dueña de las credenciales con las que creamos el pago, no a la que creaste vos. Las credenciales de prueba de Checkout Pro son las credenciales de producción de una aplicación `TestApp-…` que Mercado Pago crea en la cuenta vendedora de prueba, así que el webhook se configura en esa aplicación. Si no lo configurás, el mensaje igual aparece gracias a la vuelta del comprador.
 
 Para configurarlo con el MCP necesitás `mercadopago-mcp-vendedor` [autorizado con la cuenta vendedora de prueba](../../configuracion/mcp/README.md#autorizar-la-cuenta-vendedora-de-prueba). Después copiá este prompt en tu agente:
 
@@ -195,16 +195,16 @@ A mano, iniciá sesión en el [panel de desarrolladores](https://www.mercadopago
 
 ## Verificar la autenticidad del pago
 
-Tanto la vuelta del comprador como el webhook nos dan el ID de una order, pero cualquiera podría visitar esa URL o hacer un POST con un ID inventado. Por eso no confiamos en lo que nos llega: `verify` obtiene la order desde Mercado Pago con nuestras credenciales y solo si su `status` es `processed` (el pago se aprobó y se acreditó) invalida el tag `messages` para que se muestren los mensajes actualizados.
+Tanto la vuelta del comprador como el webhook nos dan el ID de un pago, pero cualquiera podría visitar esa URL o hacer un POST con un ID inventado. Por eso no confiamos en lo que nos llega: `verify` obtiene el pago desde Mercado Pago con nuestras credenciales y solo si su `status` es `processed` (el pago se aprobó y se acreditó) invalida el tag `messages` para que se muestren los mensajes actualizados.
 
 > [!NOTE]
 > La página es estática (`ensureStatic = "navigation"` hace que el build falle si algo la vuelve dinámica). `api.message.list` usa `"use cache"` con el tag `messages`. Como la verificación pasa en un Route Handler usamos `revalidateTag` con `{expire: 0}` para que la próxima visita ya vea el mensaje nuevo.
 
-De esta manera nos aseguramos de que la order exista y haya sido pagada.
+De esta manera nos aseguramos de que el pago exista y haya sido aprobado.
 
 ## Listar los mensajes
 
-No tenemos una base de datos: Mercado Pago ya guarda cada order con el texto en su `description`. Dentro de `/src/api.ts`, la función `list` en `message` busca las orders procesadas marcadas como mensaje (por eso usamos `external_reference: "message"` en la order) y las devuelve como mensajes:
+No tenemos una base de datos: Mercado Pago ya guarda cada pago con el texto en su `description`. Dentro de `/src/api.ts`, la función `list` en `message` busca los pagos procesados marcados como mensaje (por eso usamos `external_reference: "message"` al crearlos) y los devuelve como mensajes:
 
 ```ts
 const api = {
@@ -216,11 +216,11 @@ const api = {
       cacheLife("max");
       cacheTag("messages");
 
-      // La búsqueda de orders acepta un rango de fechas de hasta un mes, así que buscamos las de los últimos 30 días
+      // La búsqueda acepta un rango de fechas de hasta un mes, así que buscamos los pagos de los últimos 30 días
       const end = new Date();
       const begin = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-      // Mercado Pago es nuestra base de datos: cada mensaje es una order procesada (pagada) con el texto en su `description`
+      // Mercado Pago es nuestra base de datos: cada mensaje es un pago procesado (aprobado) con el texto en su `description`
       const {data = []} = await new Order(mercadopago).search({
         options: {
           external_reference: "message",
@@ -230,16 +230,16 @@ const api = {
         },
       });
 
-      // Devolvemos las orders como mensajes
+      // Devolvemos los pagos como mensajes
       return data.map((order) => ({id: order.id!, text: order.description!}));
     },
   },
 };
 ```
 
-La búsqueda de orders pide un rango de fechas (`begin_date` y `end_date`) de hasta un mes, así que el muro muestra los mensajes de los últimos 30 días. Como `list` está cacheada, las fechas se calculan cada vez que invalidamos el tag `messages`, no en cada visita.
+La búsqueda pide un rango de fechas (`begin_date` y `end_date`) de hasta un mes, así que el muro muestra los mensajes de los últimos 30 días. Como `list` está cacheada, las fechas se calculan cada vez que invalidamos el tag `messages`, no en cada visita.
 
-Como cada mensaje es una order, tampoco se pueden duplicar: aunque Mercado Pago nos notifique varias veces la misma order, la búsqueda la devuelve una sola vez.
+Como cada mensaje es un pago, tampoco se pueden duplicar: aunque Mercado Pago nos notifique varias veces el mismo pago, la búsqueda lo devuelve una sola vez.
 
 En una aplicación real deberíamos verificar la firma secreta de las notificaciones, devolver errores más descriptivos y más, pero por simplicidad y tiempo te voy a dejar esa tarea a vos, podés ver más [acá](https://www.mercadopago.com.ar/developers/es/docs/checkout-pro-orders/notifications).
 
@@ -249,11 +249,11 @@ Ahora vamos a intentar de hacer el flujo completo de agregar un mensaje a nuestr
 
 En `E-mail para comprobante` poné el e-mail de la cuenta compradora de prueba. Si su usuario es `TESTUSER123456`, su e-mail es `test_user_123456@testuser.com`. Con cualquier otro e-mail Mercado Pago rechaza el pago con "Una de las partes con la que intentás hacer el pago es de prueba", porque la vendedora es de prueba y el comprador no.
 
-Cuando el pago se aprueba, Mercado Pago nos devuelve solo a la aplicación, que verifica la order y ya muestra el mensaje.
+Cuando el pago se aprueba, Mercado Pago nos devuelve solo a la aplicación, que verifica el pago y ya muestra el mensaje.
 
 ![image](./screenshots/mensaje-pagado.jpg)
 
-Excelente, nuestro pago fue aprobado, la order fue verificada y nuestro mensaje aparece en la lista ✨.
+Excelente, nuestro pago fue aprobado, lo verificamos y nuestro mensaje aparece en la lista ✨.
 
 ---
 

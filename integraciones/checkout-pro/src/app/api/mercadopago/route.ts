@@ -5,7 +5,7 @@ import {type NextRequest, NextResponse} from "next/server";
 import {mercadopago} from "@/api";
 
 async function verify(id: string) {
-  // Obtenemos la order desde Mercado Pago para no confiar en lo que nos llega en la petición
+  // Obtenemos el pago desde Mercado Pago para no confiar en lo que nos llega en la petición
   const order = await new Order(mercadopago).get({id});
 
   // Si se procesó (el pago se aprobó), invalidamos los mensajes para mostrar el nuevo mensaje
@@ -14,7 +14,7 @@ async function verify(id: string) {
   }
 }
 
-// Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id de la order en `order_id`
+// Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id del pago en `order_id`
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("order_id");
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   // Obtenemos el cuerpo de la petición que incluye información sobre la notificación
   const body: {data?: {id: string}; type?: string} = await request.json();
 
-  // Solo nos interesan las notificaciones de orders, ignoramos el resto
+  // Solo nos interesan las notificaciones de pagos (`order`), ignoramos el resto
   if (body.type === "order" && body.data?.id) {
     await verify(body.data.id);
   }

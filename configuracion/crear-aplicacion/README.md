@@ -21,7 +21,7 @@ Elegimos `Crear en el panel de integración`.
 En "Elegí una solución para integrar" vas a elegir la que quieras integrar (Checkout Bricks está dentro de `Checkout API`). Después, en `Otros datos`, le ponemos un nombre a la aplicación, aceptamos los términos y tocamos `Crear aplicación`.
 
 > [!NOTE]
-> En Checkout Pro te va a preguntar el `Tipo de API`. Elegí `API de Orders`, que es la opción por defecto y la que usa este repositorio. La `API de Preferences` va a ser descontinuada.
+> En Checkout Pro te va a preguntar el `Tipo de API`: dejá la opción por defecto, `API de Orders`.
 
 ![image](./screenshots/app-form.jpg)
 
