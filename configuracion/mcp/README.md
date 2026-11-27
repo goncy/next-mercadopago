@@ -65,7 +65,7 @@ Hacé este paso cuando el prompt de la integración te lo pida: para ese momento
 Estas limitaciones las encontramos usando el MCP con este repositorio:
 
 - **`create_application` no aplica la URL de redirección.** La recibe, pero responde `Redirect URL Not Applied` y deja `https://www.mercadopago.com`. Para Marketplace la tenés que cargar a mano en `Configuración de la aplicación`, que además pide un captcha.
-- **No deja elegir el tipo de API para Checkout Pro.** `api_type` (`orders` o `payments`) solo existe para Checkout API, y las aplicaciones de Checkout Pro que crea el MCP figuran como `integrated API: preferences`. Igual podés crear orders con sus credenciales.
+- **No deja elegir el tipo de API para Checkout Pro.** Las aplicaciones de Checkout Pro que crea el MCP figuran con la API de Preferences, pero el código de este repositorio funciona igual con sus credenciales.
 - **`create_test_user` no anda con la vendedora de prueba.** Responde `FORBIDDEN_FOR_TRIAL_ACCOUNTS`: las cuentas de prueba se crean desde tu cuenta principal, en el panel o con `mercadopago-mcp-principal`.
 - **El MCP no muestra las contraseñas de las cuentas de prueba.** Están en el panel, en `Cuentas de prueba`, que puede pedirte validar la sesión con un QR desde la app de Mercado Pago.
 
