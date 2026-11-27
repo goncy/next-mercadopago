@@ -16,7 +16,7 @@ export default async function MarketplacePage() {
   // Obtenemos los mensajes del vendedor
   const messages = await api.message.list(marketplace);
 
-  // Creamos una order de pago y redirigimos al usuario a Mercado Pago
+  // Creamos el pago y redirigimos al usuario a Mercado Pago
   async function add(formData: FormData) {
     "use server";
 

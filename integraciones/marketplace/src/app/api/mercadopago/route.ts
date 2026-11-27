@@ -4,14 +4,14 @@ import {type NextRequest, NextResponse} from "next/server";
 
 import api from "@/api";
 
-// Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id de la order en `order_id`
+// Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id del pago en `order_id`
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("order_id");
-  // La order es del vendedor, así que la obtenemos con su access token
+  // El pago es del vendedor, así que lo obtenemos con su access token
   const marketplace = await api.user.token();
 
   if (id && marketplace) {
-    // Obtenemos la order desde Mercado Pago para no confiar en lo que nos llega en la URL
+    // Obtenemos el pago desde Mercado Pago para no confiar en lo que nos llega en la URL
     const order = await new Order(new MercadoPagoConfig({accessToken: marketplace})).get({id});
 
     // Si se procesó (el pago se aprobó), invalidamos los mensajes para mostrar el nuevo mensaje
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   // Obtenemos el cuerpo de la petición que incluye información sobre la notificación
   const body: {data?: {id: string}; type?: string} = await request.json();
 
-  // La order es del vendedor y acá no tenemos su access token, así que no la podemos obtener. Invalidamos los mensajes y la lista los vuelve a buscar en Mercado Pago con el token del vendedor, que solo devuelve las orders procesadas
+  // El pago es del vendedor y acá no tenemos su access token, así que no lo podemos obtener. Invalidamos los mensajes y la lista los vuelve a buscar en Mercado Pago con el token del vendedor, que solo devuelve los pagos procesados
   if (body.type === "order" && body.data?.id) {
     revalidateTag("messages", {expire: 0});
   }

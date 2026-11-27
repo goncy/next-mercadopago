@@ -57,11 +57,11 @@ const api = {
       // Creamos el cliente de Mercado Pago usando el access token del vendedor
       const client = new MercadoPagoConfig({accessToken: marketplace});
 
-      // La búsqueda de orders acepta un rango de fechas de hasta un mes, así que buscamos las de los últimos 30 días
+      // La búsqueda acepta un rango de fechas de hasta un mes, así que buscamos los pagos de los últimos 30 días
       const end = new Date();
       const begin = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-      // Mercado Pago es nuestra base de datos: cada mensaje es una order procesada (pagada) en la cuenta del vendedor con el texto en su `description`
+      // Mercado Pago es nuestra base de datos: cada mensaje es un pago procesado (aprobado) en la cuenta del vendedor con el texto en su `description`
       const {data = []} = await new Order(client).search({
         options: {
           external_reference: "message",
@@ -71,20 +71,20 @@ const api = {
         },
       });
 
-      // Devolvemos las orders como mensajes
+      // Devolvemos los pagos como mensajes
       return data.map((order) => ({id: order.id!, text: order.description!}));
     },
     async submit(text: Message["text"], marketplace: string) {
       // Creamos el cliente de Mercado Pago usando el access token del vendedor
       const client = new MercadoPagoConfig({accessToken: marketplace});
 
-      // Creamos la order incluyendo el monto, los items y la descripción. La información de `items` es standard de Mercado Pago. Orders no tiene `metadata`, así que guardamos el texto del mensaje en `description`.
+      // Creamos el pago incluyendo el monto, los items y la descripción. La información de `items` es standard de Mercado Pago. El texto del mensaje lo guardamos en `description`.
       const order = await new Order(client).create({
         body: {
-          // Checkout Pro usa orders `online` procesadas en modo `manual`: el comprador paga en Mercado Pago
+          // En Checkout Pro el pago es `online` y se procesa en modo `manual`: el comprador paga en Mercado Pago
           type: "online",
           processing_mode: "manual",
-          // Los montos de Orders son strings
+          // Los montos van como strings
           total_amount: "100.00",
           items: [
             {
@@ -95,13 +95,13 @@ const api = {
             },
           ],
           description: text,
-          // Marcamos la order como mensaje para poder buscarla después
+          // Marcamos el pago como mensaje para poder buscarlo después
           external_reference: "message",
           // Le agregamos ARS 5 de comisión
           marketplace_fee: "5.00",
           config: {
             online: {
-              // Cuando el pago se aprueba, Mercado Pago vuelve solo a nuestra aplicación, a la ruta que verifica la order
+              // Cuando el pago se aprueba, Mercado Pago vuelve solo a nuestra aplicación, a la ruta que verifica el pago
               success_url: `${process.env.APP_URL}/api/mercadopago`,
               auto_return: "approved",
             },
