@@ -17,9 +17,9 @@ En otras, como `Checkout Pro`, empiezan con `APP_USR-` y son de una cuenta vende
 
 ![image](./screenshots/credenciales-prueba.jpg)
 
-En realidad, esas credenciales de prueba son las **credenciales de producción de otra aplicación**, `TestApp-…`, que Mercado Pago crea dentro de la cuenta vendedora de prueba. Lo mismo pasa con cualquier aplicación que crees con una cuenta de prueba: sus credenciales de producción son de prueba, porque cobran con dinero ficticio y entre cuentas de prueba. Marketplace usa justamente eso.
+¿Cómo funciona esto? Junto con esa cuenta vendedora, Mercado Pago crea una aplicación a su nombre, llamada `TestApp-…`. Las credenciales de prueba que ves en tu aplicación son las de esa `TestApp-…`. Como su dueña es una cuenta de prueba, todo lo que hagas con ellas usa dinero ficticio. Pasa lo mismo con cualquier aplicación que crees con una cuenta de prueba: aunque digan "de producción", sus credenciales son de prueba. Marketplace usa justamente eso.
 
-Esto importa cuando configurás algo en la aplicación, como un webhook: Mercado Pago le avisa a la aplicación dueña de las credenciales, que es la `TestApp-…` de la vendedora y no la que creaste vos. Así que esa configuración la hacés iniciando sesión con la vendedora de prueba, o con `mercadopago-mcp-vendedor` (ver [Las dos cuentas](../mcp/README.md#las-dos-cuentas)).
+Tenelo en cuenta cuando configures un webhook. Mercado Pago avisa de los pagos a la aplicación dueña de las credenciales que usás. Con las credenciales de prueba de Checkout Pro, esa aplicación es la `TestApp-…`, no la que creaste vos, así que el webhook se configura en la `TestApp-…`. Para eso iniciá sesión en el panel con la cuenta vendedora de prueba, o usá `mercadopago-mcp-vendedor` (ver [Las dos cuentas](../mcp/README.md#las-dos-cuentas)).
 
 ## Con el MCP de Mercado Pago
 
