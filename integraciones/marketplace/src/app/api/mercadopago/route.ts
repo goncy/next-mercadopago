@@ -1,4 +1,3 @@
-import {MercadoPagoConfig, Order} from "mercadopago";
 import {revalidateTag} from "next/cache";
 import {type NextRequest, NextResponse} from "next/server";
 
@@ -7,17 +6,11 @@ import api from "@/api";
 // Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id del pago en `order_id`
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("order_id");
-  // El pago es del vendedor, así que lo obtenemos con su access token
+  // Leemos el access token del vendedor de la cookie, porque el pago es suyo
   const marketplace = await api.user.token();
 
   if (id && marketplace) {
-    // Obtenemos el pago desde Mercado Pago para no confiar en lo que nos llega en la URL
-    const order = await new Order(new MercadoPagoConfig({accessToken: marketplace})).get({id});
-
-    // Si se procesó (el pago se aprobó), invalidamos los mensajes para mostrar el nuevo mensaje
-    if (order.status === "processed") {
-      revalidateTag("messages", {expire: 0});
-    }
+    await api.payment.verify(id, marketplace);
   }
 
   // Volvemos a la página del marketplace, que ya muestra el mensaje nuevo

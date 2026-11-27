@@ -266,7 +266,6 @@ Igual que en Checkout Pro, guardamos el texto del mensaje en `description` (hast
 Como en Checkout Pro, el Route Handler `src/app/api/mercadopago/route.ts` recibe al comprador cuando vuelve de Mercado Pago (`GET`) y las notificaciones del webhook (`POST`):
 
 ```ts
-import {MercadoPagoConfig, Order} from "mercadopago";
 import {revalidateTag} from "next/cache";
 import {type NextRequest, NextResponse} from "next/server";
 
@@ -275,17 +274,11 @@ import api from "@/api";
 // Mercado Pago redirige al comprador acá cuando el pago se aprueba, con el id del pago en `order_id`
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("order_id");
-  // El pago es del vendedor, así que lo obtenemos con su access token
+  // Leemos el access token del vendedor de la cookie, porque el pago es suyo
   const marketplace = await api.user.token();
 
   if (id && marketplace) {
-    // Obtenemos el pago desde Mercado Pago para no confiar en lo que nos llega en la URL
-    const order = await new Order(new MercadoPagoConfig({accessToken: marketplace})).get({id});
-
-    // Si se procesó (el pago se aprobó), invalidamos los mensajes para mostrar el nuevo mensaje
-    if (order.status === "processed") {
-      revalidateTag("messages", {expire: 0});
-    }
+    await api.payment.verify(id, marketplace);
   }
 
   // Volvemos a la página del marketplace, que ya muestra el mensaje nuevo
@@ -307,7 +300,26 @@ export async function POST(request: Request) {
 }
 ```
 
-Cuando el comprador vuelve, el navegador todavía tiene la cookie con el access token del creador de contenido, así que obtenemos el pago con ese token y, si está `processed`, invalidamos los mensajes.
+Cuando el comprador vuelve, el navegador todavía tiene la cookie con el access token del creador de contenido, así que se lo pasamos a la función `verify` en `payment`, dentro de `/src/api.ts`. Esa función obtiene el pago con ese token y, si está `processed`, invalida los mensajes:
+
+```ts
+const api = {
+  payment: {
+    async verify(id: string, marketplace: string) {
+      // Creamos el cliente de Mercado Pago usando el access token del vendedor, porque el pago es suyo
+      const client = new MercadoPagoConfig({accessToken: marketplace});
+
+      // Obtenemos el pago desde Mercado Pago para no confiar en el id que nos llega
+      const order = await new Order(client).get({id});
+
+      // Si se procesó (el pago se aprobó), invalidamos los mensajes para mostrar el nuevo mensaje
+      if (order.status === "processed") {
+        revalidateTag("messages", {expire: 0});
+      }
+    },
+  },
+};
+```
 
 El webhook es distinto: lo llama el servidor de Mercado Pago, que no tiene esa cookie, y con nuestro access token (el del Marketplace) Mercado Pago no nos deja obtener un pago que es del creador de contenido (responde `order_not_found`). Pero tampoco hace falta: el webhook solo invalida los mensajes, y `list` los vuelve a buscar en Mercado Pago con el token del creador de contenido, que solo devuelve los pagos procesados. Una notificación inventada no puede agregar un mensaje que no se pagó.
 
@@ -315,7 +327,7 @@ Las notificaciones de los pagos que creamos con el token del creador de contenid
 
 ## Listar los mensajes del creador de contenido
 
-Igual que en Checkout Pro, no tenemos una base de datos: cada mensaje es un pago procesado con el texto en su `description`, y buscamos los de los últimos 30 días porque la búsqueda acepta un rango de hasta un mes. La diferencia es que los pagos son de la cuenta del creador de contenido, así que los buscamos con su access token:
+Igual que en Checkout Pro, no tenemos una base de datos: cada mensaje es un pago procesado con el texto en su `description`, y buscamos los de los últimos 30 días porque la búsqueda pide un rango de fechas de hasta 30 días. La diferencia es que los pagos son de la cuenta del creador de contenido, así que los buscamos con su access token:
 
 ```ts
 const api = {
@@ -330,17 +342,16 @@ const api = {
       // Creamos el cliente de Mercado Pago usando el access token del vendedor
       const client = new MercadoPagoConfig({accessToken: marketplace});
 
-      // La búsqueda acepta un rango de fechas de hasta un mes, así que buscamos los pagos de los últimos 30 días
-      const end = new Date();
-      const begin = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
+      // La búsqueda pide un rango de fechas de hasta 30 días: buscamos los pagos de los últimos 30 días
+      const now = Date.now();
 
       // Mercado Pago es nuestra base de datos: cada mensaje es un pago procesado (aprobado) en la cuenta del vendedor con el texto en su `description`
       const {data = []} = await new Order(client).search({
         options: {
           external_reference: "message",
           status: "processed",
-          begin_date: begin.toISOString(),
-          end_date: end.toISOString(),
+          begin_date: new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          end_date: new Date(now).toISOString(),
         },
       });
 

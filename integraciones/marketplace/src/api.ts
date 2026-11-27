@@ -1,5 +1,5 @@
 import {MercadoPagoConfig, OAuth, Order} from "mercadopago";
-import {cacheLife, cacheTag} from "next/cache";
+import {cacheLife, cacheTag, revalidateTag} from "next/cache";
 import {cookies} from "next/headers";
 
 interface Message {
@@ -7,7 +7,7 @@ interface Message {
   text: string;
 }
 
-export const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TOKEN!});
+const mercadopago = new MercadoPagoConfig({accessToken: process.env.MP_ACCESS_TOKEN!});
 
 const api = {
   user: {
@@ -57,17 +57,16 @@ const api = {
       // Creamos el cliente de Mercado Pago usando el access token del vendedor
       const client = new MercadoPagoConfig({accessToken: marketplace});
 
-      // La búsqueda acepta un rango de fechas de hasta un mes, así que buscamos los pagos de los últimos 30 días
-      const end = new Date();
-      const begin = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
+      // La búsqueda pide un rango de fechas de hasta 30 días: buscamos los pagos de los últimos 30 días
+      const now = Date.now();
 
       // Mercado Pago es nuestra base de datos: cada mensaje es un pago procesado (aprobado) en la cuenta del vendedor con el texto en su `description`
       const {data = []} = await new Order(client).search({
         options: {
           external_reference: "message",
           status: "processed",
-          begin_date: begin.toISOString(),
-          end_date: end.toISOString(),
+          begin_date: new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          end_date: new Date(now).toISOString(),
         },
       });
 
@@ -111,6 +110,20 @@ const api = {
 
       // Devolvemos la url del checkout para que el usuario pueda pagar
       return order.checkout_url!;
+    },
+  },
+  payment: {
+    async verify(id: string, marketplace: string) {
+      // Creamos el cliente de Mercado Pago usando el access token del vendedor, porque el pago es suyo
+      const client = new MercadoPagoConfig({accessToken: marketplace});
+
+      // Obtenemos el pago desde Mercado Pago para no confiar en el id que nos llega
+      const order = await new Order(client).get({id});
+
+      // Si se procesó (el pago se aprobó), invalidamos los mensajes para mostrar el nuevo mensaje
+      if (order.status === "processed") {
+        revalidateTag("messages", {expire: 0});
+      }
     },
   },
 };
