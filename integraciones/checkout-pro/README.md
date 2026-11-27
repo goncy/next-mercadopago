@@ -180,7 +180,15 @@ Cuando el pago se aprueba, Mercado Pago redirige al comprador a `success_url` y 
 Pero si el comprador cierra la pestaña antes de volver, nunca nos enteramos. Para eso está el webhook: Mercado Pago le avisa a nuestro servidor de cada cambio en la order, aunque el comprador no vuelva. Con Orders, el webhook se [configura en el panel](../../configuracion/webhook/README.md) con el evento `Order (Mercado Pago)` y la URL `<APP_URL>/api/mercadopago`.
 
 > [!IMPORTANT]
-> Las notificaciones llegan a la aplicación dueña de las credenciales con las que creamos la order. Con las credenciales de prueba de Checkout Pro, que son de la cuenta vendedora que Mercado Pago crea sola, no pudimos hacer que llegaran: esa cuenta tiene su propia aplicación y no la podemos configurar. Por eso, mientras desarrollamos, el mensaje aparece gracias a la vuelta del comprador. Con tus credenciales de producción, el webhook de tu aplicación sí recibe las notificaciones.
+> Las notificaciones llegan a la aplicación dueña de las credenciales con las que creamos la order, no a la que creaste vos. Las credenciales de prueba de Checkout Pro son las credenciales de producción de una aplicación `TestApp-…` que Mercado Pago crea en la cuenta vendedora de prueba, así que el webhook se configura en esa aplicación. Si no lo configurás, el mensaje igual aparece gracias a la vuelta del comprador.
+
+Para configurarlo con el MCP necesitás `mercadopago-mcp-vendedor` [autorizado con la cuenta vendedora de prueba](../../configuracion/mcp/README.md#autorizar-la-cuenta-vendedora-de-prueba). Después copiá este prompt en tu agente:
+
+```text
+Usando el MCP de Mercado Pago, buscá con mercadopago-mcp-principal la aplicación de prueba de la vendedora que da las credenciales de prueba de mi aplicación de Checkout Pro (el "seller app ID"). Con mercadopago-mcp-vendedor, configurá el webhook de esa aplicación en <APP_URL>/api/mercadopago (tomá APP_URL de .env.local), en producción y en prueba, para el evento Order (Mercado Pago).
+```
+
+A mano, iniciá sesión en el [panel de desarrolladores](https://www.mercadopago.com.ar/developers/panel/app) con la cuenta vendedora de prueba, abrí la aplicación `TestApp-…` y seguí la guía de [webhooks](../../configuracion/webhook/README.md).
 
 > [!NOTE]
 > Es importante siempre retornar un estado 200 para indicarle a Mercado Pago que la notificación fue recibida. Solo debemos retornar un estado que no sea 200 cuando hubo algún error por el cual queremos que Mercado Pago nos notifique nuevamente.

@@ -16,7 +16,7 @@ Usando el MCP de Mercado Pago, mostrame las últimas notificaciones de mi aplica
 
 ## A mano
 
-Vamos a ir a [Mercado Pago](https://www.mercadopago.com.ar/developers/panel/app) e ingresamos a la aplicación de la cual queremos recibir notificaciones. Luego seleccionamos la sección de `Webhooks` del panel izquierdo y clickeamos el botón de `Configurar notificaciones`:
+Vamos a ir a [Mercado Pago](https://www.mercadopago.com.ar/developers/panel/app) e ingresamos a la aplicación de la cual queremos recibir notificaciones. Tiene que ser la aplicación dueña de las credenciales que usás en `.env.local`: si son las credenciales de prueba de Checkout Pro, es la aplicación `TestApp-…` de la cuenta vendedora de prueba, así que iniciá sesión con esa cuenta. Luego seleccionamos la sección de `Webhooks` del panel izquierdo y clickeamos el botón de `Configurar notificaciones`:
 
 ![image](./screenshots/config.jpg)
 
